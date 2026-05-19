@@ -6,6 +6,17 @@ demo name branch="main":
 deploy branch="main":
     stackablectl stack install forgejo --stack-file infrastructure/stack.yaml -n deployment --stack-parameters repoRevision={{branch}}
 
+# Rewrite branch-pinned references (Forgejo targetRevisions in
+# platform/applications/ and refs/heads/ URLs in infrastructure/stack.yaml)
+# so the checked-out branch self-references. Version-pinned Helm targetRevisions
+# (e.g. "1.12.1") are left alone — only [a-zA-Z]-prefixed values match.
+retarget branch:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    sed -i -E 's|targetRevision: "[a-zA-Z][a-zA-Z0-9_/-]*"|targetRevision: "{{branch}}"|g' platform/applications/*.yaml
+    sed -i -E 's|refs/heads/[a-zA-Z][a-zA-Z0-9_/-]*/infrastructure/|refs/heads/{{branch}}/infrastructure/|g' infrastructure/stack.yaml
+    echo "Retargeted to {{branch}}. Review with 'git diff' and commit when happy."
+
 seal-secrets:
     #!/usr/bin/env bash
     set -euo pipefail
