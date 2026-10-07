@@ -96,6 +96,14 @@ concepts:
     data_type: decimal
     description: List price of a part in US dollars.
     iri: http://www.example.com/ns/tpch/Part/retailPrice
+  - id: brand
+    name: Brand
+    data_type: string
+    description: Brand a part is sold under, for example Brand#13. Brands group parts of a manufacturer.
+    iri: http://www.example.com/ns/tpch/Part/brand
+    examples:
+    - Brand#13
+    - Brand#32
 - id: order
   name: Order
   description: An order placed by a customer, consisting of one or more line items.

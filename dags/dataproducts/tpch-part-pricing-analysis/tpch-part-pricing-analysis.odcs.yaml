@@ -32,6 +32,9 @@ schema:
     logicalType: string
     physicalType: varchar
     description: Brand name (format Brand#NN).
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Part/brand
   - name: manufacturer
     logicalType: string
     physicalType: varchar
