@@ -1,0 +1,86 @@
+apiVersion: v3.1.0
+kind: DataContract
+id: tpch-part-pricing-analysis
+name: Part Pricing Analysis
+version: 1.0.0
+status: active
+team:
+  name: analytics-engineering
+description:
+  purpose: One row per part type, brand, manufacturer and container with retail prices, supply costs, margins and sales.
+  usage: Pricing and margin analysis across the parts catalog.
+servers:
+- server: trino
+  type: trino
+  host: trino-coordinator
+  port: 8443
+  catalog: hive-iceberg
+  schema: demo
+schema:
+- name: part_pricing_analysis
+  physicalName: part_pricing_analysis
+  logicalType: object
+  physicalType: table
+  description: Product pricing and supply chain metrics aggregated by part type, brand, manufacturer, and container. Combines
+    catalog pricing with sales data and supply costs.
+  properties:
+  - name: part_type
+    logicalType: string
+    physicalType: varchar
+    description: Part type category (e.g. STANDARD POLISHED BRASS).
+  - name: brand
+    logicalType: string
+    physicalType: varchar
+    description: Brand name (format Brand#NN).
+  - name: manufacturer
+    logicalType: string
+    physicalType: varchar
+    description: Manufacturer name (format Manufacturer#N).
+  - name: container
+    logicalType: string
+    physicalType: varchar
+    description: Shipping container type (e.g. SM CASE, LG BOX).
+  - name: part_count
+    logicalType: integer
+    physicalType: bigint
+    description: Number of distinct parts in this category.
+  - name: avg_retail_price
+    logicalType: number
+    physicalType: double
+    description: Average retail price across parts.
+  - name: min_retail_price
+    logicalType: number
+    physicalType: double
+    description: Lowest retail price.
+  - name: max_retail_price
+    logicalType: number
+    physicalType: double
+    description: Highest retail price.
+  - name: supplier_count
+    logicalType: integer
+    physicalType: bigint
+    description: Number of distinct suppliers for this category.
+  - name: avg_supply_cost
+    logicalType: number
+    physicalType: double
+    description: Average cost per unit from suppliers.
+  - name: avg_margin
+    logicalType: number
+    physicalType: double
+    description: Average retail price minus supply cost (gross margin per unit).
+  - name: total_available_inventory
+    logicalType: integer
+    physicalType: bigint
+    description: Total units available across all suppliers.
+  - name: total_quantity_sold
+    logicalType: number
+    physicalType: double
+    description: Total units sold. Zero if no sales.
+  - name: total_net_revenue
+    logicalType: number
+    physicalType: double
+    description: Total revenue after discounts. Zero if no sales.
+  - name: avg_discount_applied
+    logicalType: number
+    physicalType: double
+    description: Average discount rate on line items in this category.

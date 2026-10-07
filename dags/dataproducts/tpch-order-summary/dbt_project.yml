@@ -1,0 +1,16 @@
+name: tpch_order_summary
+version: "1.0.0"
+config-version: 2
+
+profile: tpch_order_summary
+
+model-paths: ["models"]
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  tpch_order_summary:
+    marts:
+      +materialized: table

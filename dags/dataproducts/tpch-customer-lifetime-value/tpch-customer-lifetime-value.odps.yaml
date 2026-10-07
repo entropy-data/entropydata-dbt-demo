@@ -1,0 +1,30 @@
+apiVersion: v1.0.0
+kind: DataProduct
+id: tpch-customer-lifetime-value
+name: Customer Lifetime Value
+version: 1.0.0
+status: active
+domain: sales
+description:
+  purpose: One row per customer with lifetime revenue, order history and purchasing breadth.
+  usage: Customer segmentation, retention and value analysis. Query "hive-iceberg".demo.customer_lifetime_value in Trino.
+  limitations: Based on TPC-H benchmark data, not real business data.
+team:
+  name: analytics-engineering
+inputPorts:
+- name: tpch-core
+  version: 1.0.0
+  contractId: tpch-core
+outputPorts:
+- name: customer-lifetime-value
+  description: Table "hive-iceberg".demo.customer_lifetime_value, built by dbt.
+  version: 1.0.0
+  type: trino
+  contractId: tpch-customer-lifetime-value
+tags:
+- tpch
+- consumer-aligned
+- dbt
+customProperties:
+- property: dataProductBuilder
+  value: https://github.com/entropy-data/entropydata-dbt-demo-builder

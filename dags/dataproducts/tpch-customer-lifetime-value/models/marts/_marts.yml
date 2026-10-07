@@ -1,0 +1,38 @@
+version: 2
+models:
+- name: customer_lifetime_value
+  description: Customer-level lifetime value metrics including total spend, order frequency, and product diversity. One row
+    per customer. Includes customers with zero orders.
+  columns:
+  - name: customer_id
+    description: Unique customer identifier.
+  - name: customer_name
+    description: Name of the customer.
+  - name: market_segment
+    description: Market segment the customer belongs to.
+  - name: customer_nation
+    description: Nation where the customer is located.
+  - name: customer_region
+    description: Geographic region where the customer is located.
+  - name: account_balance
+    description: Current account balance in dollars. May be negative.
+  - name: total_orders
+    description: Total number of orders placed by this customer.
+  - name: first_order_date
+    description: Date of the customer's earliest order.
+  - name: last_order_date
+    description: Date of the customer's most recent order.
+  - name: lifetime_net_revenue
+    description: Total revenue after discounts across all orders.
+  - name: lifetime_quantity
+    description: Total quantity of items ordered.
+  - name: avg_order_value
+    description: Average total_price per order.
+  - name: revenue_per_order
+    description: Lifetime net revenue divided by total orders.
+  - name: total_line_items
+    description: Total number of line items across all orders.
+  - name: distinct_parts_ordered
+    description: Number of unique parts this customer has ordered.
+  - name: distinct_suppliers_used
+    description: Number of unique suppliers that fulfilled this customer's orders.

@@ -1,0 +1,86 @@
+apiVersion: v3.1.0
+kind: DataContract
+id: tpch-supplier-performance
+name: Supplier Performance
+version: 1.0.0
+status: active
+team:
+  name: analytics-engineering
+description:
+  purpose: One row per supplier with revenue, quantity supplied, orders fulfilled and supply cost aggregates.
+  usage: Supplier scorecards and procurement analysis.
+servers:
+- server: trino
+  type: trino
+  host: trino-coordinator
+  port: 8443
+  catalog: hive-iceberg
+  schema: demo
+schema:
+- name: supplier_performance
+  physicalName: supplier_performance
+  logicalType: object
+  physicalType: table
+  description: Supplier-level performance metrics including revenue, quantity supplied, and supply cost aggregates. One row
+    per supplier.
+  authoritativeDefinitions:
+  - type: semantics
+    url: http://www.example.com/ns/tpch/Supplier
+  properties:
+  - name: supplier_id
+    logicalType: integer
+    physicalType: bigint
+    primaryKey: true
+    primaryKeyPosition: 1
+    required: true
+    description: Unique supplier identifier.
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Supplier/supplierKey
+  - name: supplier_name
+    logicalType: string
+    physicalType: varchar
+    description: Name of the supplier.
+  - name: supplier_nation
+    logicalType: string
+    physicalType: varchar
+    description: Nation where the supplier is located.
+  - name: supplier_region
+    logicalType: string
+    physicalType: varchar
+    description: Geographic region where the supplier is located.
+  - name: orders_fulfilled
+    logicalType: integer
+    physicalType: bigint
+    description: Count of distinct orders this supplier contributed to.
+  - name: total_quantity_supplied
+    logicalType: number
+    physicalType: double
+    description: Total quantity of items supplied across all orders.
+  - name: total_revenue
+    logicalType: number
+    physicalType: double
+    description: Gross revenue (sum of extended prices).
+  - name: net_revenue
+    logicalType: number
+    physicalType: double
+    description: Revenue after discounts.
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/netRevenue
+  - name: avg_item_price
+    logicalType: number
+    physicalType: double
+    description: Average extended price per line item.
+  - name: min_supply_cost
+    logicalType: number
+    physicalType: double
+    description: Lowest supply cost across all parts this supplier provides.
+  - name: avg_supply_cost
+    logicalType: number
+    physicalType: double
+    description: Average supply cost across all part-supplier relationships.
+  - name: total_available_quantity
+    logicalType: integer
+    physicalType: bigint
+    description: Total inventory available across all parts.

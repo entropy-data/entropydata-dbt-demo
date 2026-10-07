@@ -1,0 +1,239 @@
+# Semantics namespace for the TPC-H domain, published to Entropy Data by the data product DAGs
+# (PUT /api/semantics/experimental/namespaces/...). Data contracts link to the concepts through
+# `authoritativeDefinitions` of type `semantics`, using the concept IRIs below.
+namespace: tpch
+name: TPC-H
+description: Business entities of the TPC-H parts supplier domain and the keys that join them.
+team: analytics-engineering
+concepts:
+- id: account-balance
+  name: Account Balance
+  kind: shared_property
+  data_type: decimal
+  description: Current balance of a customer or supplier account in US dollars. May be negative.
+  iri: http://www.example.com/ns/tpch/accountBalance
+  examples:
+  - '711.56'
+  - '-272.60'
+- id: net-revenue
+  name: Net Revenue
+  kind: metric
+  unit: USD
+  better_when: higher
+  formula: sum(extended_price * (1 - discount))
+  description: Revenue after discounts, before tax. Sum over line items of extended price times one minus discount.
+  iri: http://www.example.com/ns/tpch/netRevenue
+- id: region
+  name: Region
+  description: A geographic region (Africa, America, Asia, Europe, Middle East). Groups nations.
+  iri: http://www.example.com/ns/tpch/Region
+  properties:
+  - id: region-key
+    name: Region Key
+    data_type: integer
+    required: true
+    description: Unique identifier of a region. Joins nations to their region.
+    iri: http://www.example.com/ns/tpch/Region/regionKey
+- id: nation
+  name: Nation
+  description: A country. Customers and suppliers are located in exactly one nation.
+  iri: http://www.example.com/ns/tpch/Nation
+  properties:
+  - id: nation-key
+    name: Nation Key
+    data_type: integer
+    required: true
+    description: Unique identifier of a nation. Joins customers and suppliers to their nation.
+    iri: http://www.example.com/ns/tpch/Nation/nationKey
+- id: customer
+  name: Customer
+  description: A business that places orders, assigned to a market segment.
+  iri: http://www.example.com/ns/tpch/Customer
+  properties:
+  - id: customer-key
+    name: Customer Key
+    data_type: integer
+    required: true
+    description: Unique identifier of a customer. Joins orders to the customer who placed them.
+    iri: http://www.example.com/ns/tpch/Customer/customerKey
+  - id: market-segment
+    name: Market Segment
+    data_type: string
+    description: Market segment a customer belongs to.
+    iri: http://www.example.com/ns/tpch/Customer/marketSegment
+    enum:
+    - AUTOMOBILE
+    - BUILDING
+    - FURNITURE
+    - HOUSEHOLD
+    - MACHINERY
+  - ref: account-balance
+- id: supplier
+  name: Supplier
+  description: A business that supplies parts.
+  iri: http://www.example.com/ns/tpch/Supplier
+  properties:
+  - id: supplier-key
+    name: Supplier Key
+    data_type: integer
+    required: true
+    description: Unique identifier of a supplier. Joins part supplies and line items to the supplier.
+    iri: http://www.example.com/ns/tpch/Supplier/supplierKey
+  - ref: account-balance
+- id: part
+  name: Part
+  description: A product that suppliers supply and customers order.
+  iri: http://www.example.com/ns/tpch/Part
+  properties:
+  - id: part-key
+    name: Part Key
+    data_type: integer
+    required: true
+    description: Unique identifier of a part. Joins part supplies and line items to the part.
+    iri: http://www.example.com/ns/tpch/Part/partKey
+  - id: retail-price
+    name: Retail Price
+    data_type: decimal
+    description: List price of a part in US dollars.
+    iri: http://www.example.com/ns/tpch/Part/retailPrice
+- id: order
+  name: Order
+  description: An order placed by a customer, consisting of one or more line items.
+  iri: http://www.example.com/ns/tpch/Order
+  properties:
+  - id: order-key
+    name: Order Key
+    data_type: integer
+    required: true
+    description: Unique identifier of an order. Joins line items to their order.
+    iri: http://www.example.com/ns/tpch/Order/orderKey
+  - id: order-date
+    name: Order Date
+    data_type: date
+    description: Date the order was placed.
+    iri: http://www.example.com/ns/tpch/Order/orderDate
+  - id: order-status
+    name: Order Status
+    data_type: string
+    description: 'Fulfillment status of an order: F = fulfilled, O = open, P = partially fulfilled.'
+    iri: http://www.example.com/ns/tpch/Order/orderStatus
+    enum:
+    - F
+    - O
+    - P
+  - id: order-priority
+    name: Order Priority
+    data_type: string
+    description: Priority of an order.
+    iri: http://www.example.com/ns/tpch/Order/orderPriority
+    enum:
+    - 1-URGENT
+    - 2-HIGH
+    - 3-MEDIUM
+    - 4-NOT SPECIFIED
+    - 5-LOW
+- id: line-item
+  name: Line Item
+  description: One part on one order, supplied by one supplier. Identified by order key and line number.
+  iri: http://www.example.com/ns/tpch/LineItem
+  properties:
+  - id: line-number
+    name: Line Number
+    data_type: integer
+    required: true
+    description: Position of the line item within its order. Unique together with the order key.
+    iri: http://www.example.com/ns/tpch/LineItem/lineNumber
+  - id: ship-mode
+    name: Ship Mode
+    data_type: string
+    description: Transport mode a line item is shipped with.
+    iri: http://www.example.com/ns/tpch/LineItem/shipMode
+    enum:
+    - AIR
+    - FOB
+    - MAIL
+    - RAIL
+    - REG AIR
+    - SHIP
+    - TRUCK
+relationships:
+- id: region-contains-nation
+  name: contains
+  type: relatedTo
+  multiplicity: OneToMany
+  roles:
+  - concept: region
+    role_name: region
+  - concept: nation
+    role_name: nation
+- id: nation-locates-customer
+  name: locates
+  type: relatedTo
+  multiplicity: OneToMany
+  roles:
+  - concept: nation
+    role_name: nation
+  - concept: customer
+    role_name: customer
+- id: nation-locates-supplier
+  name: locates
+  type: relatedTo
+  multiplicity: OneToMany
+  roles:
+  - concept: nation
+    role_name: nation
+  - concept: supplier
+    role_name: supplier
+- id: customer-places-order
+  name: places
+  type: relatedTo
+  multiplicity: OneToMany
+  roles:
+  - concept: customer
+    role_name: customer
+  - concept: order
+    role_name: order
+- id: order-has-line-item
+  name: has
+  type: relatedTo
+  multiplicity: OneToMany
+  roles:
+  - concept: order
+    role_name: order
+  - concept: line-item
+    role_name: lineItem
+- id: part-ordered-in-line-item
+  name: ordered in
+  type: relatedTo
+  multiplicity: OneToMany
+  roles:
+  - concept: part
+    role_name: part
+  - concept: line-item
+    role_name: lineItem
+- id: supplier-ships-line-item
+  name: ships
+  type: relatedTo
+  multiplicity: OneToMany
+  roles:
+  - concept: supplier
+    role_name: supplier
+  - concept: line-item
+    role_name: lineItem
+- id: supplier-supplies-part
+  name: supplies
+  type: relatedTo
+  multiplicity: ManyToMany
+  roles:
+  - concept: supplier
+    role_name: supplier
+  - concept: part
+    role_name: part
+- id: net-revenue-measures-order
+  name: measures
+  type: measures
+  roles:
+  - concept: net-revenue
+    role_name: metric
+  - concept: order
+    role_name: order

@@ -65,7 +65,7 @@ data:
     }
 
     resource "forgejo_repository" "clone" {
-      name       = "openmetadata-dbt-demo"
-      clone_addr = "https://github.com/stackabletech/openmetadata-dbt-demo.git"
+      name       = "entropydata-dbt-demo"
+      clone_addr = "https://github.com/entropy-data/entropydata-dbt-demo.git"
       mirror     = false
     }

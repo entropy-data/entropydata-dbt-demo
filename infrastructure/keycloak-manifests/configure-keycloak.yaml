@@ -392,34 +392,25 @@ data:
       add_to_access_token      = true
     }
 
-    resource "keycloak_openid_client" "openmetadata" {
+    resource "keycloak_openid_client" "entropy_data" {
       realm_id              = keycloak_realm.stackable_demo.id
-      client_id             = "openmetadata"
-      name                  = "OpenMetadata"
+      client_id             = "entropy-data"
+      name                  = "Entropy Data"
       enabled               = true
       access_type           = "CONFIDENTIAL"
-      client_secret         = "openmetadata-secret"
+      client_secret         = "entropy-data-secret"
       standard_flow_enabled = true
       valid_redirect_uris   = ["*"]
       web_origins           = ["+"]
     }
 
-    resource "keycloak_openid_client_default_scopes" "openmetadata_scopes" {
+    resource "keycloak_openid_client_default_scopes" "entropy_data_scopes" {
       realm_id  = keycloak_realm.stackable_demo.id
-      client_id = keycloak_openid_client.openmetadata.id
+      client_id = keycloak_openid_client.entropy_data.id
       default_scopes = [
         "profile",
         "email",
         "roles",
         "web-origins",
       ]
-    }
-
-    resource "keycloak_openid_audience_protocol_mapper" "openmetadata_audience" {
-      realm_id                 = keycloak_realm.stackable_demo.id
-      client_id                = keycloak_openid_client.openmetadata.id
-      name                     = "openmetadata-audience"
-      included_client_audience = "openmetadata"
-      add_to_id_token          = true
-      add_to_access_token      = true
     }

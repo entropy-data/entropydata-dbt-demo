@@ -1,0 +1,99 @@
+---
+# Data Contract CLI as API server. Entropy Data runs data contract tests through it
+# (Organization Settings > Data Contract Tests, configured by the entropy-data-init job):
+# it POSTs the contract to /test?server=<server>, the CLI tests Trino and returns the results.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: datacontract-cli
+  namespace: platform
+  labels:
+    app.kubernetes.io/name: datacontract-cli
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: datacontract-cli
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: datacontract-cli
+    spec:
+      containers:
+        - name: datacontract-cli
+          image: datacontract/cli:1.2.4 # renovate: datasource=docker depName=datacontract/cli
+          args: ["api", "--host", "0.0.0.0", "--port", "4242"]
+          env:
+            # Requests must carry this key as x-api-key; Entropy Data is configured with the same value.
+            - name: DATACONTRACT_CLI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: datacontract-cli-api-key
+                  key: api-key
+            # Semantic links (IRIs) in the contracts are resolved through Entropy Data's /api/semantics.
+            # The CLI only does that for the host configured here, which must be the organization's
+            # public URL, because that is the host Entropy Data sends along with each test request.
+            - name: ENTROPY_DATA_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: oidc-endpoints
+                  key: entropy-data-base-url
+            # Trino credentials stay in the CLI; they are only used for this pinned host.
+            - name: DATACONTRACT_TRINO_HOST
+              value: trino-coordinator
+            - name: DATACONTRACT_TRINO_PORT
+              value: "8443"
+            - name: DATACONTRACT_TRINO_USERNAME
+              value: admin
+            - name: DATACONTRACT_TRINO_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: trino-users
+                  key: admin
+            # Trino's TLS certificate is issued by the Stackable CA
+            - name: REQUESTS_CA_BUNDLE
+              value: /stackable-ca/ca.crt
+          ports:
+            - name: http
+              containerPort: 4242
+          readinessProbe:
+            tcpSocket:
+              port: 4242
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+            limits:
+              memory: 2Gi
+          volumeMounts:
+            - name: stackable-ca
+              mountPath: /stackable-ca
+              readOnly: true
+      volumes:
+        - name: stackable-ca
+          configMap:
+            name: datacontract-cli-tls-truststore
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: datacontract-cli
+  namespace: platform
+spec:
+  selector:
+    app.kubernetes.io/name: datacontract-cli
+  ports:
+    - name: http
+      port: 4242
+      targetPort: 4242
+---
+apiVersion: secrets.stackable.tech/v1alpha1
+kind: TrustStore
+metadata:
+  name: datacontract-cli-tls-truststore
+  namespace: platform
+spec:
+  secretClassName: tls
+  format: tls-pem
+  targetKind: ConfigMap

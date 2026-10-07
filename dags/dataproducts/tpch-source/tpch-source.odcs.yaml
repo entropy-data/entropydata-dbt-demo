@@ -1,0 +1,540 @@
+apiVersion: v3.1.0
+kind: DataContract
+id: tpch-source
+name: Source Tables
+version: 1.0.0
+status: active
+team:
+  name: analytics-engineering
+description:
+  purpose: TPC-H benchmark dataset (scale factor tiny) served by the Trino tpch catalog. Contains 8 tables modeling a parts
+    supplier business with customers, orders, line items, parts, suppliers, nations, and regions.
+servers:
+- server: trino
+  type: trino
+  host: trino-coordinator
+  port: 8443
+  catalog: tpch
+  schema: tiny
+schema:
+- id: region
+  name: region
+  physicalName: region
+  logicalType: object
+  physicalType: table
+  description: Geographic regions (5 rows). Top-level grouping for nations.
+  authoritativeDefinitions:
+  - type: semantics
+    url: http://www.example.com/ns/tpch/Region
+  properties:
+  - id: regionkey
+    name: regionkey
+    logicalType: integer
+    physicalType: bigint
+    primaryKey: true
+    primaryKeyPosition: 1
+    required: true
+    description: Unique region identifier (surrogate key).
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Region/regionKey
+  - id: name
+    name: name
+    logicalType: string
+    physicalType: varchar(25)
+    description: Region name (e.g. AFRICA, AMERICA, ASIA, EUROPE, MIDDLE EAST).
+  - id: comment
+    name: comment
+    logicalType: string
+    physicalType: varchar(152)
+    description: Free-text comment about the region.
+- id: nation
+  name: nation
+  physicalName: nation
+  logicalType: object
+  physicalType: table
+  description: Nations within regions (25 rows). Each nation belongs to one region.
+  authoritativeDefinitions:
+  - type: semantics
+    url: http://www.example.com/ns/tpch/Nation
+  properties:
+  - id: nationkey
+    name: nationkey
+    logicalType: integer
+    physicalType: bigint
+    primaryKey: true
+    primaryKeyPosition: 1
+    required: true
+    description: Unique nation identifier (surrogate key).
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Nation/nationKey
+  - id: name
+    name: name
+    logicalType: string
+    physicalType: varchar(25)
+    description: Nation name (e.g. UNITED STATES, GERMANY, CHINA).
+  - id: regionkey
+    name: regionkey
+    logicalType: integer
+    physicalType: bigint
+    description: Foreign key to region.
+    relationships:
+    - type: foreignKey
+      to: region.regionkey
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Region/regionKey
+  - id: comment
+    name: comment
+    logicalType: string
+    physicalType: varchar(152)
+    description: Free-text comment about the nation.
+- id: supplier
+  name: supplier
+  physicalName: supplier
+  logicalType: object
+  physicalType: table
+  description: Parts suppliers (100 rows at tiny scale). Each supplier is in one nation.
+  authoritativeDefinitions:
+  - type: semantics
+    url: http://www.example.com/ns/tpch/Supplier
+  properties:
+  - id: suppkey
+    name: suppkey
+    logicalType: integer
+    physicalType: bigint
+    primaryKey: true
+    primaryKeyPosition: 1
+    required: true
+    description: Unique supplier identifier (surrogate key).
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Supplier/supplierKey
+  - id: name
+    name: name
+    logicalType: string
+    physicalType: varchar(25)
+    description: Supplier name (format Supplier#NNNNNNNNN).
+  - id: address
+    name: address
+    logicalType: string
+    physicalType: varchar(40)
+    description: Street address of the supplier.
+  - id: nationkey
+    name: nationkey
+    logicalType: integer
+    physicalType: bigint
+    description: Foreign key to nation.
+    relationships:
+    - type: foreignKey
+      to: nation.nationkey
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Nation/nationKey
+  - id: phone
+    name: phone
+    logicalType: string
+    physicalType: varchar(15)
+    description: Phone number (format NN-NNN-NNN-NNNN).
+  - id: acctbal
+    name: acctbal
+    logicalType: number
+    physicalType: double
+    description: Account balance in dollars.
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/accountBalance
+  - id: comment
+    name: comment
+    logicalType: string
+    physicalType: varchar(101)
+    description: Free-text comment about the supplier.
+- id: part
+  name: part
+  physicalName: part
+  logicalType: object
+  physicalType: table
+  description: Parts catalog (2,000 rows at tiny scale).
+  authoritativeDefinitions:
+  - type: semantics
+    url: http://www.example.com/ns/tpch/Part
+  properties:
+  - id: partkey
+    name: partkey
+    logicalType: integer
+    physicalType: bigint
+    primaryKey: true
+    primaryKeyPosition: 1
+    required: true
+    description: Unique part identifier (surrogate key).
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Part/partKey
+  - id: name
+    name: name
+    logicalType: string
+    physicalType: varchar(55)
+    description: Part name composed of randomly generated words.
+  - id: mfgr
+    name: mfgr
+    logicalType: string
+    physicalType: varchar(25)
+    description: Manufacturer name (format Manufacturer#N).
+  - id: brand
+    name: brand
+    logicalType: string
+    physicalType: varchar(10)
+    description: Brand name (format Brand#NN).
+  - id: type
+    name: type
+    logicalType: string
+    physicalType: varchar(25)
+    description: Part type as a 3-word compound (e.g. STANDARD POLISHED BRASS).
+  - id: size
+    name: size
+    logicalType: integer
+    physicalType: integer
+    description: Part size as an integer from 1 to 50.
+  - id: container
+    name: container
+    logicalType: string
+    physicalType: varchar(10)
+    description: Shipping container type (e.g. SM CASE, LG BOX, MED PKG).
+  - id: retailprice
+    name: retailprice
+    logicalType: number
+    physicalType: double
+    description: Retail price in dollars.
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Part/retailPrice
+  - id: comment
+    name: comment
+    logicalType: string
+    physicalType: varchar(23)
+    description: Free-text comment about the part.
+- id: partsupp
+  name: partsupp
+  physicalName: partsupp
+  logicalType: object
+  physicalType: table
+  description: Part-supplier relationships (8,000 rows at tiny scale). Maps which suppliers provide which parts, with cost
+    and availability.
+  properties:
+  - id: partkey
+    name: partkey
+    logicalType: integer
+    physicalType: bigint
+    primaryKey: true
+    primaryKeyPosition: 1
+    required: true
+    description: Foreign key to part.
+    relationships:
+    - type: foreignKey
+      to: part.partkey
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Part/partKey
+  - id: suppkey
+    name: suppkey
+    logicalType: integer
+    physicalType: bigint
+    primaryKey: true
+    primaryKeyPosition: 2
+    required: true
+    description: Foreign key to supplier.
+    relationships:
+    - type: foreignKey
+      to: supplier.suppkey
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Supplier/supplierKey
+  - id: availqty
+    name: availqty
+    logicalType: integer
+    physicalType: integer
+    description: Number of units available from this supplier for this part.
+  - id: supplycost
+    name: supplycost
+    logicalType: number
+    physicalType: double
+    description: Cost per unit from this supplier, in dollars.
+  - id: comment
+    name: comment
+    logicalType: string
+    physicalType: varchar(199)
+    description: Free-text comment about this part-supplier relationship.
+- id: customer
+  name: customer
+  physicalName: customer
+  logicalType: object
+  physicalType: table
+  description: Customers (1,500 rows at tiny scale). Each customer belongs to one nation.
+  authoritativeDefinitions:
+  - type: semantics
+    url: http://www.example.com/ns/tpch/Customer
+  properties:
+  - id: custkey
+    name: custkey
+    logicalType: integer
+    physicalType: bigint
+    primaryKey: true
+    primaryKeyPosition: 1
+    required: true
+    description: Unique customer identifier (surrogate key).
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Customer/customerKey
+  - id: name
+    name: name
+    logicalType: string
+    physicalType: varchar(25)
+    description: Customer name (format Customer#NNNNNNNNN).
+  - id: address
+    name: address
+    logicalType: string
+    physicalType: varchar(40)
+    description: Street address of the customer.
+  - id: nationkey
+    name: nationkey
+    logicalType: integer
+    physicalType: bigint
+    description: Foreign key to nation.
+    relationships:
+    - type: foreignKey
+      to: nation.nationkey
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Nation/nationKey
+  - id: phone
+    name: phone
+    logicalType: string
+    physicalType: varchar(15)
+    description: Phone number (format NN-NNN-NNN-NNNN).
+  - id: acctbal
+    name: acctbal
+    logicalType: number
+    physicalType: double
+    description: Account balance in dollars. May be negative.
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/accountBalance
+  - id: mktsegment
+    name: mktsegment
+    logicalType: string
+    physicalType: varchar(10)
+    description: Market segment (AUTOMOBILE, BUILDING, FURNITURE, HOUSEHOLD, MACHINERY).
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Customer/marketSegment
+  - id: comment
+    name: comment
+    logicalType: string
+    physicalType: varchar(117)
+    description: Free-text comment about the customer.
+- id: orders
+  name: orders
+  physicalName: orders
+  logicalType: object
+  physicalType: table
+  description: Customer orders (15,000 rows at tiny scale). Each order belongs to one customer.
+  authoritativeDefinitions:
+  - type: semantics
+    url: http://www.example.com/ns/tpch/Order
+  properties:
+  - id: orderkey
+    name: orderkey
+    logicalType: integer
+    physicalType: bigint
+    primaryKey: true
+    primaryKeyPosition: 1
+    required: true
+    description: Unique order identifier (surrogate key).
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Order/orderKey
+  - id: custkey
+    name: custkey
+    logicalType: integer
+    physicalType: bigint
+    description: Foreign key to customer.
+    relationships:
+    - type: foreignKey
+      to: customer.custkey
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Customer/customerKey
+  - id: orderstatus
+    name: orderstatus
+    logicalType: string
+    physicalType: varchar(1)
+    description: 'Order status: F = fulfilled, O = open, P = partially fulfilled.'
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Order/orderStatus
+  - id: totalprice
+    name: totalprice
+    logicalType: number
+    physicalType: double
+    description: Total order price in dollars.
+  - id: orderdate
+    name: orderdate
+    logicalType: date
+    physicalType: date
+    description: Date the order was placed.
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Order/orderDate
+  - id: orderpriority
+    name: orderpriority
+    logicalType: string
+    physicalType: varchar(15)
+    description: 'Priority level: 1-URGENT, 2-HIGH, 3-MEDIUM, 4-NOT SPECIFIED, 5-LOW.'
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Order/orderPriority
+  - id: clerk
+    name: clerk
+    logicalType: string
+    physicalType: varchar(15)
+    description: Clerk who processed the order (format Clerk#NNNNNNNNN).
+  - id: shippriority
+    name: shippriority
+    logicalType: integer
+    physicalType: integer
+    description: Shipping priority flag (integer).
+  - id: comment
+    name: comment
+    logicalType: string
+    physicalType: varchar(79)
+    description: Free-text comment about the order.
+- id: lineitem
+  name: lineitem
+  physicalName: lineitem
+  logicalType: object
+  physicalType: table
+  description: Order line items (60,175 rows at tiny scale). Each line item is one part on one order, supplied by one supplier.
+    The most granular fact table.
+  relationships:
+  - type: foreignKey
+    from:
+    - lineitem.partkey
+    - lineitem.suppkey
+    to:
+    - partsupp.partkey
+    - partsupp.suppkey
+  authoritativeDefinitions:
+  - type: semantics
+    url: http://www.example.com/ns/tpch/LineItem
+  properties:
+  - id: orderkey
+    name: orderkey
+    logicalType: integer
+    physicalType: bigint
+    primaryKey: true
+    primaryKeyPosition: 1
+    required: true
+    description: Foreign key to orders.
+    relationships:
+    - type: foreignKey
+      to: orders.orderkey
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Order/orderKey
+  - id: partkey
+    name: partkey
+    logicalType: integer
+    physicalType: bigint
+    description: Foreign key to part.
+    relationships:
+    - type: foreignKey
+      to: part.partkey
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Part/partKey
+  - id: suppkey
+    name: suppkey
+    logicalType: integer
+    physicalType: bigint
+    description: Foreign key to supplier.
+    relationships:
+    - type: foreignKey
+      to: supplier.suppkey
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Supplier/supplierKey
+  - id: linenumber
+    name: linenumber
+    logicalType: integer
+    physicalType: integer
+    primaryKey: true
+    primaryKeyPosition: 2
+    required: true
+    description: Line number within the order (1-based).
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/LineItem/lineNumber
+  - id: quantity
+    name: quantity
+    logicalType: number
+    physicalType: double
+    description: Quantity ordered (1 to 50).
+  - id: extendedprice
+    name: extendedprice
+    logicalType: number
+    physicalType: double
+    description: Line item price before discount (quantity * retail price).
+  - id: discount
+    name: discount
+    logicalType: number
+    physicalType: double
+    description: Discount percentage as a decimal (0.00 to 0.10).
+  - id: tax
+    name: tax
+    logicalType: number
+    physicalType: double
+    description: Tax rate as a decimal (0.00 to 0.08).
+  - id: returnflag
+    name: returnflag
+    logicalType: string
+    physicalType: varchar(1)
+    description: 'Return status: R = returned, A = accepted, N = not yet received.'
+  - id: linestatus
+    name: linestatus
+    logicalType: string
+    physicalType: varchar(1)
+    description: 'Shipping status: F = shipped, O = not yet shipped.'
+  - id: shipdate
+    name: shipdate
+    logicalType: date
+    physicalType: date
+    description: Date the line item was shipped.
+  - id: commitdate
+    name: commitdate
+    logicalType: date
+    physicalType: date
+    description: Committed delivery date.
+  - id: receiptdate
+    name: receiptdate
+    logicalType: date
+    physicalType: date
+    description: Actual date the customer received the item.
+  - id: shipinstruct
+    name: shipinstruct
+    logicalType: string
+    physicalType: varchar(25)
+    description: Shipping instruction (DELIVER IN PERSON, COLLECT COD, TAKE BACK RETURN, NONE).
+  - id: shipmode
+    name: shipmode
+    logicalType: string
+    physicalType: varchar(10)
+    description: Shipping mode (AIR, FOB, MAIL, RAIL, REG AIR, SHIP, TRUCK).
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/LineItem/shipMode
+  - id: comment
+    name: comment
+    logicalType: string
+    physicalType: varchar(44)
+    description: Free-text comment about the line item.

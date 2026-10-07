@@ -1,0 +1,16 @@
+name: tpch_part_pricing_analysis
+version: "1.0.0"
+config-version: 2
+
+profile: tpch_part_pricing_analysis
+
+model-paths: ["models"]
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  tpch_part_pricing_analysis:
+    marts:
+      +materialized: table

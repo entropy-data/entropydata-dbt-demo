@@ -1,0 +1,17 @@
+tpch_shipping_analysis:
+  target: dev
+  outputs:
+    dev:
+      type: trino
+      method: ldap
+      host: "{{ env_var('TRINO_HOST', 'trino-coordinator') }}"
+      port: 8443
+      user: "{{ env_var('TRINO_USER', 'admin') }}"
+      password: "{{ env_var('TRINO_PASSWORD') }}"
+      catalog: hive-iceberg
+      schema: demo
+      http_scheme: https
+      cert: "{{ env_var('TRINO_CA_BUNDLE', 'true') }}"
+      threads: 4
+      session_properties:
+        query_max_run_time: 5m

@@ -1,0 +1,16 @@
+name: tpch_customer_lifetime_value
+version: "1.0.0"
+config-version: 2
+
+profile: tpch_customer_lifetime_value
+
+model-paths: ["models"]
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  tpch_customer_lifetime_value:
+    marts:
+      +materialized: table

@@ -1,0 +1,17 @@
+version: 2
+models:
+- name: revenue_by_region
+  description: Revenue and order metrics aggregated by region and nation. Useful for geographic analysis of sales performance.
+  columns:
+  - name: region_name
+    description: Geographic region name.
+  - name: nation_name
+    description: Nation name within the region.
+  - name: customer_count
+    description: Number of distinct customers with orders.
+  - name: order_count
+    description: Number of distinct orders.
+  - name: net_revenue
+    description: Total revenue after discounts.
+  - name: avg_order_value
+    description: Average total_price per order.

@@ -1,0 +1,36 @@
+version: 2
+models:
+- name: part_pricing_analysis
+  description: Product pricing and supply chain metrics aggregated by part type, brand, manufacturer, and container. Combines
+    catalog pricing with sales data and supply costs.
+  columns:
+  - name: part_type
+    description: Part type category (e.g. STANDARD POLISHED BRASS).
+  - name: brand
+    description: Brand name (format Brand#NN).
+  - name: manufacturer
+    description: Manufacturer name (format Manufacturer#N).
+  - name: container
+    description: Shipping container type (e.g. SM CASE, LG BOX).
+  - name: part_count
+    description: Number of distinct parts in this category.
+  - name: avg_retail_price
+    description: Average retail price across parts.
+  - name: min_retail_price
+    description: Lowest retail price.
+  - name: max_retail_price
+    description: Highest retail price.
+  - name: supplier_count
+    description: Number of distinct suppliers for this category.
+  - name: avg_supply_cost
+    description: Average cost per unit from suppliers.
+  - name: avg_margin
+    description: Average retail price minus supply cost (gross margin per unit).
+  - name: total_available_inventory
+    description: Total units available across all suppliers.
+  - name: total_quantity_sold
+    description: Total units sold. Zero if no sales.
+  - name: total_net_revenue
+    description: Total revenue after discounts. Zero if no sales.
+  - name: avg_discount_applied
+    description: Average discount rate on line items in this category.

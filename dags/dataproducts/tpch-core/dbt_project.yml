@@ -1,0 +1,16 @@
+name: tpch_core
+version: "1.0.0"
+config-version: 2
+
+profile: tpch_core
+
+model-paths: ["models"]
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  tpch_core:
+    staging:
+      +materialized: view

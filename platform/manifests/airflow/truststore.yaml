@@ -1,0 +1,11 @@
+---
+# Stackable CA as ConfigMap, so dbt and datacontract-cli in the executor pods can verify Trino's TLS certificate.
+apiVersion: secrets.stackable.tech/v1alpha1
+kind: TrustStore
+metadata:
+  name: airflow-tls-truststore
+  namespace: platform
+spec:
+  secretClassName: tls
+  format: tls-pem
+  targetKind: ConfigMap

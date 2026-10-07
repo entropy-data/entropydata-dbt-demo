@@ -1,0 +1,52 @@
+apiVersion: v3.1.0
+kind: DataContract
+id: tpch-revenue-by-region
+name: Revenue by Region
+version: 1.0.0
+status: active
+team:
+  name: analytics-engineering
+description:
+  purpose: One row per region and nation with customer and order counts, net revenue and average order value.
+  usage: Geographic revenue reporting.
+servers:
+- server: trino
+  type: trino
+  host: trino-coordinator
+  port: 8443
+  catalog: hive-iceberg
+  schema: demo
+schema:
+- name: revenue_by_region
+  physicalName: revenue_by_region
+  logicalType: object
+  physicalType: table
+  description: Revenue and order metrics aggregated by region and nation. Useful for geographic analysis of sales performance.
+  properties:
+  - name: region_name
+    logicalType: string
+    physicalType: varchar
+    description: Geographic region name.
+  - name: nation_name
+    logicalType: string
+    physicalType: varchar
+    description: Nation name within the region.
+  - name: customer_count
+    logicalType: integer
+    physicalType: bigint
+    description: Number of distinct customers with orders.
+  - name: order_count
+    logicalType: integer
+    physicalType: bigint
+    description: Number of distinct orders.
+  - name: net_revenue
+    logicalType: number
+    physicalType: double
+    description: Total revenue after discounts.
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/netRevenue
+  - name: avg_order_value
+    logicalType: number
+    physicalType: double
+    description: Average total_price per order.

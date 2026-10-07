@@ -52,10 +52,6 @@ seal-secrets:
         kubeseal --cert "$CERT_FILE" --scope=cluster-wide --format=yaml < "$input_file" > "$output_file"
     done
 
-build-airflow-image:
-    docker build -t oci.stackable.tech/sandbox/airflow:3.1.6-stackable0.0.0-dev-cosmos docker/airflow
-    docker push oci.stackable.tech/sandbox/airflow:3.1.6-stackable0.0.0-dev-cosmos
-
 build-landing-image:
     docker build -t oci.stackable.tech/sandbox/demo-landing:0.2.3-dev demo-landing
     docker push oci.stackable.tech/sandbox/demo-landing:0.2.3-dev
@@ -124,12 +120,13 @@ kubeconfig name="":
     RG=$(tofu output -raw -state="${CLUSTER}.tfstate" resource_group_name)
     az aks get-credentials --resource-group "$RG" --name "${CLUSTER}" --overwrite-existing
 
-dbt-compile:
+# Compile/run the dbt project of one data product, e.g. `just dbt-run tpch-core`
+dbt-compile dataproduct="tpch-core":
     #!/usr/bin/env bash
-    cd dags/dbt/tpch_demo
+    cd dags/dataproducts/{{dataproduct}}
     dbt compile --profiles-dir .
 
-dbt-run:
+dbt-run dataproduct="tpch-core":
     #!/usr/bin/env bash
-    cd dags/dbt/tpch_demo
+    cd dags/dataproducts/{{dataproduct}}
     dbt run --profiles-dir .

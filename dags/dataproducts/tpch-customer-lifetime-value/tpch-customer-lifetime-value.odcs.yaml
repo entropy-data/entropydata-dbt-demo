@@ -1,0 +1,105 @@
+apiVersion: v3.1.0
+kind: DataContract
+id: tpch-customer-lifetime-value
+name: Customer Lifetime Value
+version: 1.0.0
+status: active
+team:
+  name: analytics-engineering
+description:
+  purpose: One row per customer with lifetime revenue, order history and purchasing breadth.
+  usage: Customer segmentation, retention and value analysis.
+servers:
+- server: trino
+  type: trino
+  host: trino-coordinator
+  port: 8443
+  catalog: hive-iceberg
+  schema: demo
+schema:
+- name: customer_lifetime_value
+  physicalName: customer_lifetime_value
+  logicalType: object
+  physicalType: table
+  description: Customer-level lifetime value metrics including total spend, order frequency, and product diversity. One row
+    per customer. Includes customers with zero orders.
+  authoritativeDefinitions:
+  - type: semantics
+    url: http://www.example.com/ns/tpch/Customer
+  properties:
+  - name: customer_id
+    logicalType: integer
+    physicalType: bigint
+    primaryKey: true
+    primaryKeyPosition: 1
+    required: true
+    description: Unique customer identifier.
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Customer/customerKey
+  - name: customer_name
+    logicalType: string
+    physicalType: varchar
+    description: Name of the customer.
+  - name: market_segment
+    logicalType: string
+    physicalType: varchar
+    description: Market segment the customer belongs to.
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Customer/marketSegment
+  - name: customer_nation
+    logicalType: string
+    physicalType: varchar
+    description: Nation where the customer is located.
+  - name: customer_region
+    logicalType: string
+    physicalType: varchar
+    description: Geographic region where the customer is located.
+  - name: account_balance
+    logicalType: number
+    physicalType: double
+    description: Current account balance in dollars. May be negative.
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/accountBalance
+  - name: total_orders
+    logicalType: integer
+    physicalType: bigint
+    description: Total number of orders placed by this customer.
+  - name: first_order_date
+    logicalType: date
+    physicalType: date
+    description: Date of the customer's earliest order.
+  - name: last_order_date
+    logicalType: date
+    physicalType: date
+    description: Date of the customer's most recent order.
+  - name: lifetime_net_revenue
+    logicalType: number
+    physicalType: double
+    description: Total revenue after discounts across all orders.
+  - name: lifetime_quantity
+    logicalType: number
+    physicalType: double
+    description: Total quantity of items ordered.
+  - name: avg_order_value
+    logicalType: number
+    physicalType: double
+    description: Average total_price per order.
+  - name: revenue_per_order
+    logicalType: number
+    physicalType: double
+    description: Lifetime net revenue divided by total orders.
+  - name: total_line_items
+    logicalType: integer
+    physicalType: bigint
+    description: Total number of line items across all orders.
+  - name: distinct_parts_ordered
+    logicalType: integer
+    physicalType: bigint
+    description: Number of unique parts this customer has ordered.
+  - name: distinct_suppliers_used
+    logicalType: integer
+    physicalType: bigint
+    description: Number of unique suppliers that fulfilled this customer's orders.

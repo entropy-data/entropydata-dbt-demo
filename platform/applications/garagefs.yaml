@@ -5,7 +5,7 @@ metadata:
   name: garage
   namespace: deployment
 spec:
-  project: dbt-openmetadata-demo
+  project: dbt-entropydata-demo
   destination:
     server: https://kubernetes.default.svc
     namespace: shared

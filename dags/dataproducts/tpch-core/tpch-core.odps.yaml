@@ -1,0 +1,30 @@
+apiVersion: v1.0.0
+kind: DataProduct
+id: tpch-core
+name: Core
+version: 1.0.0
+status: active
+domain: sales
+description:
+  purpose: Cleaned and consistently named TPC-H entities (regions, nations, customers, suppliers, parts, part suppliers, orders,
+    line items) as views on the raw TPC-H source tables.
+  usage: Building block for the TPC-H mart data products. Query the stg_* views in "hive-iceberg".demo.
+team:
+  name: analytics-engineering
+inputPorts:
+- name: tpch-source
+  version: 1.0.0
+  contractId: tpch-source
+outputPorts:
+- name: trino-core
+  description: Staging views stg_* in "hive-iceberg".demo, built by dbt.
+  version: 1.0.0
+  type: trino
+  contractId: tpch-core
+tags:
+- tpch
+- source-aligned
+- dbt
+customProperties:
+- property: dataProductBuilder
+  value: https://github.com/entropy-data/entropydata-dbt-demo-builder

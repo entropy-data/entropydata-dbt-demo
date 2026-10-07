@@ -1,0 +1,84 @@
+apiVersion: v3.1.0
+kind: DataContract
+id: tpch-shipping-analysis
+name: Shipping Analysis
+version: 1.0.0
+status: active
+team:
+  name: analytics-engineering
+description:
+  purpose: One row per ship mode, customer region and nation with delivery times, late deliveries and return rates.
+  usage: 'Logistics performance: delivery delays and returns by shipping mode and destination.'
+servers:
+- server: trino
+  type: trino
+  host: trino-coordinator
+  port: 8443
+  catalog: hive-iceberg
+  schema: demo
+schema:
+- name: shipping_analysis
+  physicalName: shipping_analysis
+  logicalType: object
+  physicalType: table
+  description: Shipping and delivery performance metrics aggregated by ship mode, region, and nation. Tracks delivery timeliness,
+    late delivery rates, and return rates.
+  properties:
+  - name: ship_mode
+    logicalType: string
+    physicalType: varchar
+    description: Shipping mode (AIR, FOB, MAIL, RAIL, REG AIR, SHIP, TRUCK).
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/LineItem/shipMode
+  - name: customer_region
+    logicalType: string
+    physicalType: varchar
+    description: Geographic region of the receiving customer.
+  - name: customer_nation
+    logicalType: string
+    physicalType: varchar
+    description: Nation of the receiving customer.
+  - name: shipment_count
+    logicalType: integer
+    physicalType: bigint
+    description: Total number of line items shipped in this group.
+  - name: total_quantity_shipped
+    logicalType: number
+    physicalType: double
+    description: Total quantity of items shipped.
+  - name: net_revenue
+    logicalType: number
+    physicalType: double
+    description: Revenue after discounts for this group.
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/netRevenue
+  - name: avg_delivery_days
+    logicalType: number
+    physicalType: double
+    description: Average days between ship date and receipt date (transit time).
+  - name: avg_receipt_vs_commit_days
+    logicalType: number
+    physicalType: double
+    description: Average days between committed date and receipt date. Negative = early, positive = late.
+  - name: avg_days_to_ship
+    logicalType: number
+    physicalType: double
+    description: Average days between order date and ship date (fulfillment speed).
+  - name: late_deliveries
+    logicalType: integer
+    physicalType: bigint
+    description: Number of line items received after the committed date.
+  - name: late_delivery_rate
+    logicalType: number
+    physicalType: double
+    description: Fraction of line items delivered late (0.0 to 1.0).
+  - name: returned_items
+    logicalType: integer
+    physicalType: bigint
+    description: Number of line items with return_flag = R.
+  - name: return_rate
+    logicalType: number
+    physicalType: double
+    description: Fraction of line items returned (0.0 to 1.0).

@@ -5,12 +5,12 @@ metadata:
   name: demo-landing
   namespace: deployment
 spec:
-  project: dbt-openmetadata-demo
+  project: dbt-entropydata-demo
   destination:
     server: https://kubernetes.default.svc
     namespace: deployment
   source:
-    repoURL: "http://forgejo-http.deployment.svc.cluster.local:3000/stackable/openmetadata-dbt-demo.git"
+    repoURL: "http://forgejo-http.deployment.svc.cluster.local:3000/stackable/entropydata-dbt-demo.git"
     targetRevision: "main"
     path: platform/manifests/demo-landing/
   syncPolicy:

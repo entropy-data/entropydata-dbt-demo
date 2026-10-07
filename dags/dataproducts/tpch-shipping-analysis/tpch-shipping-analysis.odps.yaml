@@ -1,0 +1,31 @@
+apiVersion: v1.0.0
+kind: DataProduct
+id: tpch-shipping-analysis
+name: Shipping Analysis
+version: 1.0.0
+status: active
+domain: sales
+description:
+  purpose: One row per ship mode, customer region and nation with delivery times, late deliveries and return rates.
+  usage: 'Logistics performance: delivery delays and returns by shipping mode and destination. Query "hive-iceberg".demo.shipping_analysis
+    in Trino.'
+  limitations: Based on TPC-H benchmark data, not real business data.
+team:
+  name: analytics-engineering
+inputPorts:
+- name: tpch-core
+  version: 1.0.0
+  contractId: tpch-core
+outputPorts:
+- name: shipping-analysis
+  description: Table "hive-iceberg".demo.shipping_analysis, built by dbt.
+  version: 1.0.0
+  type: trino
+  contractId: tpch-shipping-analysis
+tags:
+- tpch
+- consumer-aligned
+- dbt
+customProperties:
+- property: dataProductBuilder
+  value: https://github.com/entropy-data/entropydata-dbt-demo-builder

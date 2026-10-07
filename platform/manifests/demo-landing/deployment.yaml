@@ -36,7 +36,7 @@ spec:
             - name: FORGEJO_OWNER
               value: stackable
             - name: FORGEJO_REPO
-              value: openmetadata-dbt-demo
+              value: entropydata-dbt-demo
             - name: FORGEJO_BRANCH
               value: main
             - name: FORGEJO_USERNAME
@@ -74,7 +74,7 @@ spec:
         - name: git-sync
           image: registry.k8s.io/git-sync/git-sync:v4.3.0
           args:
-            - --repo=http://forgejo-http.deployment.svc.cluster.local:3000/stackable/openmetadata-dbt-demo.git
+            - --repo=http://forgejo-http.deployment.svc.cluster.local:3000/stackable/entropydata-dbt-demo.git
             - --ref=main
             - --depth=1
             - --period=30s

@@ -1,0 +1,27 @@
+---
+apiVersion: opa.stackable.tech/v1alpha2
+kind: OpaCluster
+metadata:
+  name: opa
+  namespace: platform
+spec:
+  image:
+    productVersion: "1.16.2"
+  clusterConfig:
+    vectorAggregatorConfigMapName: vector-aggregator-discovery
+  servers:
+    config:
+      logging:
+        enableVectorAgent: true
+    podOverrides:
+      spec:
+        containers:
+          - name: opa
+            # Per-user Entropy Data API keys for the access evaluation in trino-policy.yaml
+            # (ENTROPY_DATA_KEY_DEMO_ADMIN, ENTROPY_DATA_KEY_DEMO_USER, ...)
+            envFrom:
+              - secretRef:
+                  name: entropy-data-user-api-keys # created at runtime by the entropy-data-init job
+                  optional: true
+    roleGroups:
+      default: {}

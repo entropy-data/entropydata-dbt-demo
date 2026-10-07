@@ -1,0 +1,16 @@
+name: tpch_supplier_performance
+version: "1.0.0"
+config-version: 2
+
+profile: tpch_supplier_performance
+
+model-paths: ["models"]
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  tpch_supplier_performance:
+    marts:
+      +materialized: table

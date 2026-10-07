@@ -1,0 +1,32 @@
+version: 2
+models:
+- name: shipping_analysis
+  description: Shipping and delivery performance metrics aggregated by ship mode, region, and nation. Tracks delivery timeliness,
+    late delivery rates, and return rates.
+  columns:
+  - name: ship_mode
+    description: Shipping mode (AIR, FOB, MAIL, RAIL, REG AIR, SHIP, TRUCK).
+  - name: customer_region
+    description: Geographic region of the receiving customer.
+  - name: customer_nation
+    description: Nation of the receiving customer.
+  - name: shipment_count
+    description: Total number of line items shipped in this group.
+  - name: total_quantity_shipped
+    description: Total quantity of items shipped.
+  - name: net_revenue
+    description: Revenue after discounts for this group.
+  - name: avg_delivery_days
+    description: Average days between ship date and receipt date (transit time).
+  - name: avg_receipt_vs_commit_days
+    description: Average days between committed date and receipt date. Negative = early, positive = late.
+  - name: avg_days_to_ship
+    description: Average days between order date and ship date (fulfillment speed).
+  - name: late_deliveries
+    description: Number of line items received after the committed date.
+  - name: late_delivery_rate
+    description: Fraction of line items delivered late (0.0 to 1.0).
+  - name: returned_items
+    description: Number of line items with return_flag = R.
+  - name: return_rate
+    description: Fraction of line items returned (0.0 to 1.0).

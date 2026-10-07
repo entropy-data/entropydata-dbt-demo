@@ -1,0 +1,21 @@
+apiVersion: v1.0.0
+kind: DataProduct
+id: tpch-source
+name: Source Data
+version: 1.0.0
+status: active
+domain: sales
+description:
+  purpose: Raw TPC-H benchmark tables (scale factor tiny) served by the Trino tpch catalog.
+  usage: Read-only input for the dbt project. Use Core or the mart data products for business questions.
+team:
+  name: analytics-engineering
+outputPorts:
+  - name: trino-tpch-tiny
+    description: The eight TPC-H tables in tpch.tiny.
+    version: 1.0.0
+    type: trino
+    contractId: tpch-source
+tags:
+  - tpch
+  - source-aligned

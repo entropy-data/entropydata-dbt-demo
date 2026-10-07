@@ -1,7 +1,7 @@
 # Stackable Data Platform Demo
 
 Welcome. This cluster is running the full Stackable Data Platform demo — a
-GitOps-managed data lakehouse with OpenMetadata, Airflow, Trino, dbt, and
+GitOps-managed data lakehouse with Entropy Data, Airflow, Trino, dbt, and
 a handful of supporting components.
 
 ## Platform Deployment 
@@ -29,20 +29,25 @@ a handful of supporting components.
 ## External Componens
 | Service                   | URL | Username | Password | Enabled                                                                                      |
 |---------------------------| --- | --- | --- |----------------------------------------------------------------------------------------------|
-| **OpenMetadata**          | [http://{{ nodeport "openmetadata-nodeport" }}/](http://{{ nodeport "openmetadata-nodeport" }}/) | `demo-admin` / `demo-user` | *(see keycloak-demo-passwords secret)* | —                                                                                            |
+| **Entropy Data**          | [http://{{ nodeport "entropy-data-nodeport" }}/myorga](http://{{ nodeport "entropy-data-nodeport" }}/myorga) | `demo-admin` / `demo-user` | *(see keycloak-demo-passwords secret)* | —                                                                                            |
 | **LakeKeeper**            | [http://{{ nodeport "lakekeeper" }}/ui/](http://{{ nodeport "lakekeeper" }}/ui/) | — | — | —                                                                                            |
-| **OpenSearch Dashboards** | [http://{{ nodeport "opensearch-dashboards-nodeport" }}/](http://{{ nodeport "opensearch-dashboards-nodeport" }}/) | `admin@open-metadata.org` | `admin` | —                                                                                            |
 
 Most Stackable-managed services run with a self-signed certificate; accept
 the browser warning on first visit.
 
 ## What to look at
 
-1. In **OpenMetadata**, open the Trino service and explore the
-   `hive-iceberg.demo.*` tables — they're dbt-built marts with per-column
-   descriptions and dbt test lineage.
-2. In **ArgoCD**, watch the continuously-reconciled application tree.
-3. In **Forgejo**, browse the in-cluster git mirror of this repository.
+1. In **Entropy Data**, open a mart data product such as *Order
+   Summary*: its data contract, the data contract test results, and the
+   lineage graph that `dbt-ol` sent while building it from *Core*. The Trino
+   tables themselves show up as assets via the Trino integration.
+2. In **Airflow**, run the `dataproduct_*` DAGs. Each one publishes a data
+   product from `dags/dataproducts/` to Entropy Data, builds it with dbt, and
+   tests its data contract.
+3. In **ArgoCD**, watch the continuously-reconciled application tree.
+4. In **Forgejo**, browse the in-cluster git mirror of this repository. Add a
+   folder to `dags/dataproducts/` and a new data product appears in Airflow
+   and Entropy Data.
 
 ## Want to go deeper?
 

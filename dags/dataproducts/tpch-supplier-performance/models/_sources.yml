@@ -1,0 +1,12 @@
+version: 2
+sources:
+- name: tpch_core
+  database: hive-iceberg
+  schema: demo
+  description: Staging views of the Core data product (input port tpch-core).
+  tables:
+  - name: stg_line_items
+  - name: stg_nations
+  - name: stg_part_suppliers
+  - name: stg_regions
+  - name: stg_suppliers

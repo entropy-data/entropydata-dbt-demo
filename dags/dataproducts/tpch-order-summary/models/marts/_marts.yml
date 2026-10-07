@@ -1,0 +1,34 @@
+version: 2
+models:
+- name: order_summary
+  description: Enriched order-level summary joining orders with customer, nation, region, and aggregated line item metrics.
+    One row per order.
+  columns:
+  - name: order_id
+    description: Unique order identifier.
+  - name: order_date
+    description: Date the order was placed.
+  - name: order_status
+    description: 'Order status: F = fulfilled, O = open, P = partially fulfilled.'
+  - name: order_priority
+    description: 'Priority: 1-URGENT, 2-HIGH, 3-MEDIUM, 4-NOT SPECIFIED, 5-LOW.'
+  - name: customer_name
+    description: Name of the customer who placed the order.
+  - name: market_segment
+    description: Market segment of the customer.
+  - name: customer_nation
+    description: Nation where the customer is located.
+  - name: customer_region
+    description: Geographic region where the customer is located.
+  - name: total_price
+    description: Total order price in dollars as recorded on the order.
+  - name: line_item_count
+    description: Number of line items in the order.
+  - name: total_quantity
+    description: Sum of quantities across all line items.
+  - name: gross_revenue
+    description: Sum of extended prices before discounts.
+  - name: net_revenue
+    description: Revenue after discount. sum(extended_price * (1 - discount)).
+  - name: total_with_tax
+    description: Net revenue plus tax. sum(extended_price * (1 - discount) * (1 + tax)).

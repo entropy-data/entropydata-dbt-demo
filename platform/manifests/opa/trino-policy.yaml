@@ -1,0 +1,106 @@
+---
+# Trino authorization: reading a table that belongs to a data product output port requires an
+# active access agreement in Entropy Data. OPA asks Entropy Data per user and output port via the
+# AuthZEN-style endpoint POST /api/access/evaluation, using the user's own API key (the endpoint
+# decides for the key's user). The keys come from the Secret entropy-data-user-api-keys, created by
+# the entropy-data-init job, as env vars ENTROPY_DATA_KEY_<USER>.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: trino-entropy-data-policy
+  namespace: platform
+  labels:
+    opa.stackable.tech/bundle: "true"
+data:
+  trino.rego: |
+    package trino
+
+    import rego.v1
+
+    entropy_data_url := "http://entropy-data.platform.svc.cluster.local:8080"
+
+    # Technical users (dbt, Airflow, the Entropy Data Trino integration) are not governed here.
+    service_users := {"admin"}
+
+    # Which output port of which data product a table belongs to.
+    output_port(table) := {"dataProduct": "tpch-source", "outputPort": "trino-tpch-tiny"} if {
+      table.catalogName == "tpch"
+      table.schemaName == "tiny"
+    }
+
+    output_port(table) := {"dataProduct": "tpch-core", "outputPort": "trino-core"} if {
+      table.catalogName == "hive-iceberg"
+      table.schemaName == "demo"
+      startswith(table.tableName, "stg_")
+    }
+
+    marts := {"order_summary", "supplier_performance", "revenue_by_region", "customer_lifetime_value", "shipping_analysis", "part_pricing_analysis"}
+
+    output_port(table) := {"dataProduct": concat("-", ["tpch", replace(table.tableName, "_", "-")]), "outputPort": replace(table.tableName, "_", "-")} if {
+      table.catalogName == "hive-iceberg"
+      table.schemaName == "demo"
+      table.tableName in marts
+    }
+
+    user := input.context.identity.user
+
+    default allow := false
+
+    allow if user in service_users
+
+    # Everything except reading data (metadata, session properties, ...) stays open in the demo.
+    allow if {
+      not user in service_users
+      input.action.operation != "SelectFromColumns"
+    }
+
+    allow if {
+      not user in service_users
+      input.action.operation == "SelectFromColumns"
+      table_allowed(input.action.resource.table)
+    }
+
+    # Filtering catalogs, schemas, tables and columns is metadata: everything stays visible.
+    batch contains i if {
+      input.action.operation != "FilterColumns"
+      some i, _ in input.action.filterResources
+    }
+
+    # FilterColumns sends one table resource; the result indexes into its columns.
+    batch contains i if {
+      input.action.operation == "FilterColumns"
+      some i, _ in input.action.filterResources[0].table.columns
+    }
+
+    # No row filters or column masks in the demo.
+    rowFilters := set()
+
+    table_allowed(table) if not output_port(table)
+
+    table_allowed(table) if entropy_data_allows(output_port(table))
+
+    user_api_key := opa.runtime().env[concat("", ["ENTROPY_DATA_KEY_", upper(regex.replace(user, "[^A-Za-z0-9]", "_"))])]
+
+    entropy_data_allows(port) if {
+      response := http.send({
+        "method": "POST",
+        "url": concat("", [entropy_data_url, "/api/access/evaluation"]),
+        "headers": {
+          "Content-Type": "application/json",
+          "x-api-key": user_api_key,
+          "x-internal-api": "true",
+        },
+        "body": {
+          "subject": {"type": "user", "id": user},
+          "resource": {"type": "data_product", "id": port.dataProduct, "properties": {"outputPortId": port.outputPort}},
+          "action": {"name": "query"},
+        },
+        "cache": true,
+        "force_cache": true,
+        "force_cache_duration_seconds": 30,
+        "raise_error": false,
+        "timeout": "5s",
+      })
+      response.status_code == 200
+      response.body.decision == true
+    }

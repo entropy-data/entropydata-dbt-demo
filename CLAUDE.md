@@ -1,6 +1,6 @@
 # Repository Guide
 
-This is a GitOps-managed Kubernetes demo deploying a data platform (Trino, Hive, Airflow, HDFS, etc.) using Stackable operators and ArgoCD.
+This is a GitOps-managed Kubernetes demo deploying a data platform (Trino, Hive, Airflow, HDFS, etc.) using Stackable operators and ArgoCD, with Entropy Data (Community Edition) as data product marketplace.
 
 ## Architecture
 
@@ -41,6 +41,7 @@ secrets/                           # Plaintext Kubernetes Secrets (source of tru
         └── <secret-name>.yaml     # Plain Secret, mirrors structure of platform/manifests/
 
 dags/                              # Airflow DAG files (git-synced into Airflow pods)
+└── dataproducts/<id>/             # One data product per folder: ODPS, ODCS, optional dbt project
 
 justfile                           # Task runner (just deploy, just seal-secrets)
 ```
@@ -57,7 +58,7 @@ Never apply changes directly to the Kubernetes cluster (no `kubectl apply`, `hel
 2. Create `platform/applications/<component>.yaml` — an ArgoCD Application pointing to the manifests dir:
    ```yaml
    source:
-     repoURL: "http://forgejo-http.deployment.svc.cluster.local:3000/stackable/openmetadata-dbt-demo.git"
+     repoURL: "http://forgejo-http.deployment.svc.cluster.local:3000/stackable/entropydata-dbt-demo.git"
      targetRevision: "main"
      path: platform/manifests/<component>/
    ```
@@ -89,7 +90,7 @@ sources:
       valuesObject:
         auth:
           existingSecret: <secret-name>
-  - repoURL: "http://forgejo-http.deployment.svc.cluster.local:3000/stackable/openmetadata-dbt-demo.git"
+  - repoURL: "http://forgejo-http.deployment.svc.cluster.local:3000/stackable/entropydata-dbt-demo.git"
     targetRevision: "main"
     path: platform/manifests/<component>/
 ```
@@ -106,8 +107,8 @@ sources:
 |---|---|
 | `deployment` | ArgoCD, SealedSecrets, Forgejo |
 | `stackable-operators` | Stackable operators |
-| `shared` | GarageFS, all PostgreSQL instances (airflow, hive, hive-iceberg, openmetadata, superset) |
-| `platform` | Airflow, Trino, Hive, HDFS, ZooKeeper, Kafka, NiFi, OpenMetadata, OpenSearch, Superset, Lakekeeper, all init jobs |
+| `shared` | GarageFS, all PostgreSQL instances (airflow, hive, hive-iceberg, superset, keycloak) |
+| `platform` | Airflow, Trino, Hive, HDFS, ZooKeeper, Kafka, NiFi, Entropy Data (incl. its pgvector PostgreSQL), OpenSearch, Superset, Lakekeeper, all init jobs |
 
 Cross-namespace service references must use FQDNs (`<svc>.<namespace>.svc.cluster.local`).
 Services within the same namespace can use short names.
@@ -115,12 +116,12 @@ Services within the same namespace can use short names.
 ## Common ArgoCD Application Fields
 
 All applications should use:
-- `project: dbt-openmetadata-demo` (except infrastructure-level apps which use `default`)
+- `project: dbt-entropydata-demo` (except infrastructure-level apps which use `default`)
 - `destination.server: https://kubernetes.default.svc`
 - `destination.namespace`: `shared`, `platform`, or `deployment` depending on component (see Namespace Layout)
 - `syncPolicy.automated.selfHeal: true` and `prune: true`
 - `syncPolicy.syncOptions: [CreateNamespace=true]`
-- `source.repoURL`: use `http://forgejo-http.deployment.svc.cluster.local:3000/stackable/openmetadata-dbt-demo.git` for Forgejo sources
+- `source.repoURL`: use `http://forgejo-http.deployment.svc.cluster.local:3000/stackable/entropydata-dbt-demo.git` for Forgejo sources
 
 ## Commands
 

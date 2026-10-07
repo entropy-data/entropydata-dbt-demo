@@ -1,0 +1,107 @@
+apiVersion: v3.1.0
+kind: DataContract
+id: tpch-order-summary
+name: Order Summary
+version: 1.0.0
+status: active
+team:
+  name: analytics-engineering
+description:
+  purpose: One row per order, enriched with customer, nation and region, plus aggregated line item metrics (quantities, gross
+    and net revenue, tax).
+  usage: 'Order-level reporting: order volumes, revenue per order, order status and priority analysis.'
+servers:
+- server: trino
+  type: trino
+  host: trino-coordinator
+  port: 8443
+  catalog: hive-iceberg
+  schema: demo
+schema:
+- name: order_summary
+  physicalName: order_summary
+  logicalType: object
+  physicalType: table
+  description: Enriched order-level summary joining orders with customer, nation, region, and aggregated line item metrics.
+    One row per order.
+  authoritativeDefinitions:
+  - type: semantics
+    url: http://www.example.com/ns/tpch/Order
+  properties:
+  - name: order_id
+    logicalType: integer
+    physicalType: bigint
+    primaryKey: true
+    primaryKeyPosition: 1
+    required: true
+    description: Unique order identifier.
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Order/orderKey
+  - name: order_date
+    logicalType: date
+    physicalType: date
+    description: Date the order was placed.
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Order/orderDate
+  - name: order_status
+    logicalType: string
+    physicalType: varchar
+    description: 'Order status: F = fulfilled, O = open, P = partially fulfilled.'
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Order/orderStatus
+  - name: order_priority
+    logicalType: string
+    physicalType: varchar
+    description: 'Priority: 1-URGENT, 2-HIGH, 3-MEDIUM, 4-NOT SPECIFIED, 5-LOW.'
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Order/orderPriority
+  - name: customer_name
+    logicalType: string
+    physicalType: varchar
+    description: Name of the customer who placed the order.
+  - name: market_segment
+    logicalType: string
+    physicalType: varchar
+    description: Market segment of the customer.
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Customer/marketSegment
+  - name: customer_nation
+    logicalType: string
+    physicalType: varchar
+    description: Nation where the customer is located.
+  - name: customer_region
+    logicalType: string
+    physicalType: varchar
+    description: Geographic region where the customer is located.
+  - name: total_price
+    logicalType: number
+    physicalType: double
+    description: Total order price in dollars as recorded on the order.
+  - name: line_item_count
+    logicalType: integer
+    physicalType: bigint
+    description: Number of line items in the order.
+  - name: total_quantity
+    logicalType: number
+    physicalType: double
+    description: Sum of quantities across all line items.
+  - name: gross_revenue
+    logicalType: number
+    physicalType: double
+    description: Sum of extended prices before discounts.
+  - name: net_revenue
+    logicalType: number
+    physicalType: double
+    description: Revenue after discount. sum(extended_price * (1 - discount)).
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/netRevenue
+  - name: total_with_tax
+    logicalType: number
+    physicalType: double
+    description: Net revenue plus tax. sum(extended_price * (1 - discount) * (1 + tax)).

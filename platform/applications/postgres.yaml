@@ -14,8 +14,6 @@ spec:
             extendedConfiguration: "password_encryption=md5"
           - component: hive-iceberg
             extendedConfiguration: "password_encryption=md5"
-          - component: openmetadata
-            extendedConfiguration: ""
           - component: superset
             extendedConfiguration: ""
           - component: keycloak
@@ -24,7 +22,7 @@ spec:
     metadata:
       name: "{{component}}-postgres"
     spec:
-      project: dbt-openmetadata-demo
+      project: dbt-entropydata-demo
       destination:
         server: https://kubernetes.default.svc
         namespace: shared

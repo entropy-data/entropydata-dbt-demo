@@ -5,7 +5,7 @@ metadata:
   name: vector-aggregator
   namespace: deployment
 spec:
-  project: dbt-openmetadata-demo
+  project: dbt-entropydata-demo
   destination:
     server: https://kubernetes.default.svc
     namespace: platform
@@ -55,7 +55,7 @@ spec:
                   verify_certificate: false
                 bulk:
                   index: "logs-%Y.%m.%d"
-    - repoURL: "http://forgejo-http.deployment.svc.cluster.local:3000/stackable/openmetadata-dbt-demo.git"
+    - repoURL: "http://forgejo-http.deployment.svc.cluster.local:3000/stackable/entropydata-dbt-demo.git"
       targetRevision: "main"
       path: platform/manifests/vector-aggregator/
   syncPolicy:

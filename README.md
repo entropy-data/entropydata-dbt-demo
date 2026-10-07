@@ -1,12 +1,14 @@
-# Stackable Data Platform Demo
+# Entropy Data dbt Demo on the Stackable Data Platform
 
 > [!WARNING]
 > This repository is not meant for the general public, it is public because it may be helpful to some people and definitely serves an instructional purpose, but especially the justfile recipes and scripts in here can cause harm and delete data if not used with caution! 
 
 
-A GitOps-managed Kubernetes demo that showcases the [Stackable Data Platform](https://stackable.tech/) alongside commonly used tools from the wider data ecosystem: OpenMetadata, Superset, dbt, Astronomer Cosmos, Lakekeeper, GarageFS, Kafka, and NiFi.
+A GitOps-managed Kubernetes demo that showcases [Entropy Data](https://www.entropy-data.com/) (Community Edition) on the [Stackable Data Platform](https://stackable.tech/), alongside commonly used tools from the wider data ecosystem: Superset, dbt, OpenLineage, Lakekeeper, GarageFS, Kafka, and NiFi.
 
-The demo deploys a complete data lakehouse on Kubernetes, with TPC-H sample data flowing through dbt models in Trino, Iceberg tables managed by Lakekeeper, S3-compatible storage via GarageFS, and metadata governance through OpenMetadata — all orchestrated by Airflow and continuously deployed via ArgoCD.
+The demo deploys a complete data lakehouse on Kubernetes, with TPC-H sample data flowing through dbt models in Trino, Iceberg tables managed by Lakekeeper, and S3-compatible storage via GarageFS. Data products are defined as code (ODPS + ODCS + dbt) and published to Entropy Data by Airflow, with lineage from `dbt-ol` and data contract test results, all continuously deployed via ArgoCD.
+
+> This is an adaptation of [stackabletech/openmetadata-dbt-demo](https://github.com/stackabletech/openmetadata-dbt-demo), with OpenMetadata replaced by Entropy Data.
 
 > [!NOTE]
 > The OpenTofu configuration in `tofu/` provisions AKS, but the Kubernetes manifests themselves no longer require any cloud-specific storage class. See [Portability](#portability) for details.
@@ -104,7 +106,7 @@ After deployment, these services are accessible (via NodePort or LoadBalancer de
 | ArgoCD | `admin` / `adminadmin` |
 | Forgejo | `stackable` / `stackable` |
 | Airflow Webserver | `admin` / `admin` |
-| OpenMetadata | `admin@open-metadata.org` / `admin` |
+| Entropy Data | Keycloak SSO: `demo-admin` (superadmin) / `demo-user`, organization `myorga` |
 | Trino | `admin` (no password, HTTPS) |
 | NiFi | See sealed secret |
 
@@ -116,7 +118,6 @@ just infra <name>        # Provision AKS cluster (state: tofu/<name>.tfstate)
 just kubeconfig [name]   # Get kubeconfig (interactive selection if no name)
 just destroy [name]      # Tear down cluster (async, interactive if no name)
 just seal-secrets        # Re-seal plaintext secrets from secrets/ into platform/manifests/
-just build-airflow-image # Build and push custom Airflow image with Cosmos
 just dbt-compile         # Compile the dbt project locally
 just dbt-run             # Run dbt models locally (requires Trino access)
 ```
@@ -127,10 +128,11 @@ just dbt-run             # Run dbt models locally (requires Trino access)
 
 | Component | Description |
 |-----------|-------------|
-| **[OpenMetadata](https://open-metadata.org/)** | Data catalog and metadata governance |
+| **[Entropy Data](https://www.entropy-data.com/)** | Data product marketplace with data contracts, lineage and Trino asset sync (Community Edition, [Helm chart](https://github.com/entropy-data/entropy-data-helm)) |
 | **[Apache Superset](https://superset.apache.org/)** | Data exploration and visualization |
 | **[dbt Core](https://www.getdbt.com/)** | Data transformation framework (TPC-H models) |
-| **[Astronomer Cosmos](https://astronomer.github.io/astronomer-cosmos/)** | dbt orchestration in Airflow |
+| **[OpenLineage](https://openlineage.io/) (`dbt-ol`)** | Lineage events from dbt runs, sent to Entropy Data |
+| **[Data Contract CLI](https://cli.datacontract.com/)** | Tests data contracts against Trino and publishes results to Entropy Data |
 | **[Lakekeeper](https://lakekeeper.io/)** | Apache Iceberg REST catalog |
 | **[GarageFS](https://garagehq.deuxfleurs.fr/)** | S3-compatible distributed object storage |
 | **[ArgoCD](https://argo-cd.readthedocs.io/)** | GitOps continuous deployment |
@@ -147,19 +149,31 @@ just dbt-run             # Run dbt models locally (requires Trino access)
 | `hive-iceberg` | Iceberg | Hive Metastore (PostgreSQL) | HDFS |
 | `lakekeeper-iceberg` | Iceberg (REST) | Lakekeeper | GarageFS (S3) |
 
-### dbt Project (TPC-H)
+### Data Products
 
-The included dbt project transforms TPC-H sample data through a staging → marts pattern:
+Data products live as code in `dags/dataproducts/<data-product-id>/`: an ODPS file, one ODCS file per data contract, and optionally a dbt project.
 
-- **Staging models** (views): 8 models wrapping TPC-H source tables
-- **Mart models** (tables): Business-level aggregations — order summaries, supplier performance, revenue by region, customer lifetime value, shipping analysis, part pricing
+| Data product | Contents |
+|---|---|
+| `tpch-source` | Source-aligned: the TPC-H tables in `tpch.tiny`, described by an ODCS contract |
+| `tpch-core` | Source-aligned: dbt project with 8 cleaned staging views (`stg_*`) in `hive-iceberg.demo`, input port from `tpch-source` |
+| `tpch-order-summary`, `tpch-supplier-performance`, `tpch-revenue-by-region`, `tpch-customer-lifetime-value`, `tpch-shipping-analysis`, `tpch-part-pricing-analysis` | Consumer-aligned: one dbt project and one mart table each in `hive-iceberg.demo`, input port from `tpch-core`, one output port and data contract each |
 
-The Airflow DAG (`tpch_dbt_dag`) orchestrated by Cosmos runs daily:
-1. Executes all dbt models against Trino
-2. Uploads dbt artifacts (manifest, catalog, run results) to GarageFS
-3. Triggers OpenMetadata dbt ingestion to import lineage and documentation
+`dags/dataproduct_dags.py` generates one Airflow DAG per folder (`dataproduct_<id>`). DAGs are chained along the ODPS input ports with Airflow assets: `tpch-source` runs daily, `tpch-core` runs after it, and the six marts run after `tpch-core`. Each DAG:
+1. Publishes the ODPS and ODCS files to Entropy Data
+2. Runs `dbt-ol build` (if there is a dbt project); `dbt-ol` sends OpenLineage events to Entropy Data, linked to the data product
+3. Runs `datacontract test` for each output port contract against Trino and publishes the results to Entropy Data
 
+To add a data product, add a folder and push it to the in-cluster Forgejo. The [entropydata-dbt-demo-builder](https://github.com/entropy-data/entropydata-dbt-demo-builder) coding-agent plugin scaffolds and implements such folders.
 
+### Entropy Data Setup
+
+Entropy Data runs from the [entropy-data-helm](https://github.com/entropy-data/entropy-data-helm) chart with a dedicated pgvector PostgreSQL. Login goes through Keycloak (client `entropy-data`); `demo-admin` is superadmin. The `entropy-data-init` job (`platform/manifests/entropy-data-init/`) then sets everything up headless:
+
+1. Logs in as `demo-admin` via Keycloak and creates the organization `myorga`, with SSO auto join so every Keycloak user becomes a member on first login
+2. Creates an organization API key and stores it in the Secret `platform/entropy-data-api-key` (used by the Airflow executors)
+3. Creates the team `analytics-engineering`
+4. Creates the Trino integration (asset sync of `tpch` and `hive-iceberg`, daily) and triggers a first run via the API
 
 ## More Topics
 
@@ -200,8 +214,8 @@ platform/                          # Everything ArgoCD manages after bootstrap
     ├── trino-init/                # SQL init job (Kustomize overlay)
     ├── garagefs-init/             # GarageFS layout/bucket/key provisioning
     ├── lakekeeper-init/           # Lakekeeper bootstrap + warehouse creation
-    ├── openmetadata-init/         # OpenMetadata service + pipeline registration
-    ├── openmetadata/              # OpenMetadata sealed secrets
+    ├── entropy-data/              # pgvector PostgreSQL, NodePort, CA truststore, sealed DB secret
+    ├── entropy-data-init/         # Org, SSO auto join, API key, team, Trino integration
     ├── superset/                  # Apache Superset deployment
     ├── superset-postgres/         # PostgreSQL for Superset
     └── ...                        # HDFS, Hive, Kafka, NiFi, ZooKeeper, etc.
@@ -212,17 +226,11 @@ secrets/                           # Plaintext secrets (source of truth for seal
         └── <secret-name>.yaml
 
 dags/                              # Airflow DAGs (git-synced into pods)
-├── tpch_dbt_dag.py                # Cosmos DAG: dbt + artifact upload + OM trigger
-├── test_dag.py                    # Simple test DAG
-└── dbt/tpch_demo/                 # dbt project
-    ├── dbt_project.yml
-    ├── profiles.yml               # Trino connection config
-    └── models/
-        ├── staging/               # TPC-H source wrappers (views)
-        └── marts/                 # Business aggregations (tables)
-
-docker/airflow/                    # Custom Airflow image with Cosmos
-└── Dockerfile
+├── dataproduct_dags.py            # One DAG per data product: publish, dbt-ol build, datacontract test
+└── dataproducts/
+    ├── tpch-source/               # ODPS + ODCS
+    ├── tpch-core/                 # ODPS + ODCS + dbt project (8 staging views)
+    └── tpch-<mart>/               # 6 marts: ODPS + ODCS + dbt project (1 mart table each)
 
 tofu/                              # OpenTofu infrastructure (AKS cluster)
 ├── main.tf                        # Resource group, VNet, NSG, AKS cluster + node pools

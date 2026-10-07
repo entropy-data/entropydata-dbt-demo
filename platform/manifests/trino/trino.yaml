@@ -19,6 +19,12 @@ spec:
         oidc:
           clientCredentialsSecret: trino-keycloak-client
       - authenticationClass: trino-users
+    # Reads of data product tables are checked against access agreements in Entropy Data
+    # (platform/manifests/opa/trino-policy.yaml)
+    authorization:
+      opa:
+        configMapName: opa
+        package: trino
   coordinators:
     roleConfig:
       listenerClass: external-unstable

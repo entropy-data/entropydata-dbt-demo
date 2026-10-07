@@ -1,0 +1,21 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: datacontract-cli
+  namespace: deployment
+spec:
+  project: dbt-entropydata-demo
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: platform
+  source:
+    repoURL: "http://forgejo-http.deployment.svc.cluster.local:3000/stackable/entropydata-dbt-demo.git"
+    targetRevision: "main"
+    path: platform/manifests/datacontract-cli/
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+    automated:
+      selfHeal: true
+      prune: true

@@ -1,0 +1,30 @@
+apiVersion: v1.0.0
+kind: DataProduct
+id: tpch-revenue-by-region
+name: Revenue by Region
+version: 1.0.0
+status: active
+domain: sales
+description:
+  purpose: One row per region and nation with customer and order counts, net revenue and average order value.
+  usage: Geographic revenue reporting. Query "hive-iceberg".demo.revenue_by_region in Trino.
+  limitations: Based on TPC-H benchmark data, not real business data.
+team:
+  name: analytics-engineering
+inputPorts:
+- name: tpch-core
+  version: 1.0.0
+  contractId: tpch-core
+outputPorts:
+- name: revenue-by-region
+  description: Table "hive-iceberg".demo.revenue_by_region, built by dbt.
+  version: 1.0.0
+  type: trino
+  contractId: tpch-revenue-by-region
+tags:
+- tpch
+- consumer-aligned
+- dbt
+customProperties:
+- property: dataProductBuilder
+  value: https://github.com/entropy-data/entropydata-dbt-demo-builder

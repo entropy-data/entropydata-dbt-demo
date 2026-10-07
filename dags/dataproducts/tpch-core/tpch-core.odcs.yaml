@@ -1,0 +1,538 @@
+apiVersion: v3.1.0
+kind: DataContract
+id: tpch-core
+name: Core
+version: 1.0.0
+status: active
+team:
+  name: analytics-engineering
+description:
+  purpose: Cleaned and consistently named TPC-H entities, one view per entity, with stable keys for joining.
+  usage: Read by the TPC-H mart data products. Join on the *_id keys.
+servers:
+- server: trino
+  type: trino
+  host: trino-coordinator
+  port: 8443
+  catalog: hive-iceberg
+  schema: demo
+schema:
+- id: stg_regions
+  name: stg_regions
+  physicalName: stg_regions
+  logicalType: object
+  physicalType: view
+  description: Cleaned region records. One row per region (5 regions).
+  authoritativeDefinitions:
+  - type: semantics
+    url: http://www.example.com/ns/tpch/Region
+  properties:
+  - id: region_id
+    name: region_id
+    logicalType: integer
+    physicalType: bigint
+    primaryKey: true
+    primaryKeyPosition: 1
+    required: true
+    description: Unique region identifier.
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Region/regionKey
+  - id: region_name
+    name: region_name
+    logicalType: string
+    physicalType: varchar(25)
+    description: Region name (AFRICA, AMERICA, ASIA, EUROPE, MIDDLE EAST).
+  - id: region_comment
+    name: region_comment
+    logicalType: string
+    physicalType: varchar(152)
+    description: Free-text comment about the region.
+- id: stg_nations
+  name: stg_nations
+  physicalName: stg_nations
+  logicalType: object
+  physicalType: view
+  description: Cleaned nation records. One row per nation (25 nations).
+  authoritativeDefinitions:
+  - type: semantics
+    url: http://www.example.com/ns/tpch/Nation
+  properties:
+  - id: nation_id
+    name: nation_id
+    logicalType: integer
+    physicalType: bigint
+    primaryKey: true
+    primaryKeyPosition: 1
+    required: true
+    description: Unique nation identifier.
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Nation/nationKey
+  - id: nation_name
+    name: nation_name
+    logicalType: string
+    physicalType: varchar(25)
+    description: Nation name (e.g. UNITED STATES, GERMANY, CHINA).
+  - id: region_id
+    name: region_id
+    logicalType: integer
+    physicalType: bigint
+    description: Foreign key to stg_regions.
+    relationships:
+    - type: foreignKey
+      to: stg_regions.region_id
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Region/regionKey
+  - id: nation_comment
+    name: nation_comment
+    logicalType: string
+    physicalType: varchar(152)
+    description: Free-text comment about the nation.
+- id: stg_customers
+  name: stg_customers
+  physicalName: stg_customers
+  logicalType: object
+  physicalType: view
+  description: Cleaned customer records. One row per customer.
+  authoritativeDefinitions:
+  - type: semantics
+    url: http://www.example.com/ns/tpch/Customer
+  properties:
+  - id: customer_id
+    name: customer_id
+    logicalType: integer
+    physicalType: bigint
+    primaryKey: true
+    primaryKeyPosition: 1
+    required: true
+    description: Unique customer identifier.
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Customer/customerKey
+  - id: customer_name
+    name: customer_name
+    logicalType: string
+    physicalType: varchar(25)
+    description: Customer name (format Customer#NNNNNNNNN).
+  - id: customer_address
+    name: customer_address
+    logicalType: string
+    physicalType: varchar(40)
+    description: Street address of the customer.
+  - id: nation_id
+    name: nation_id
+    logicalType: integer
+    physicalType: bigint
+    description: Foreign key to stg_nations.
+    relationships:
+    - type: foreignKey
+      to: stg_nations.nation_id
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Nation/nationKey
+  - id: customer_phone
+    name: customer_phone
+    logicalType: string
+    physicalType: varchar(15)
+    description: Phone number (format NN-NNN-NNN-NNNN).
+  - id: account_balance
+    name: account_balance
+    logicalType: number
+    physicalType: double
+    description: Account balance in dollars. May be negative.
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/accountBalance
+  - id: market_segment
+    name: market_segment
+    logicalType: string
+    physicalType: varchar(10)
+    description: Market segment (AUTOMOBILE, BUILDING, FURNITURE, HOUSEHOLD, MACHINERY).
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Customer/marketSegment
+  - id: customer_comment
+    name: customer_comment
+    logicalType: string
+    physicalType: varchar(117)
+    description: Free-text comment about the customer.
+- id: stg_orders
+  name: stg_orders
+  physicalName: stg_orders
+  logicalType: object
+  physicalType: view
+  description: Cleaned order records. One row per order.
+  authoritativeDefinitions:
+  - type: semantics
+    url: http://www.example.com/ns/tpch/Order
+  properties:
+  - id: order_id
+    name: order_id
+    logicalType: integer
+    physicalType: bigint
+    primaryKey: true
+    primaryKeyPosition: 1
+    required: true
+    description: Unique order identifier.
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Order/orderKey
+  - id: customer_id
+    name: customer_id
+    logicalType: integer
+    physicalType: bigint
+    description: Foreign key to stg_customers.
+    relationships:
+    - type: foreignKey
+      to: stg_customers.customer_id
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Customer/customerKey
+  - id: order_status
+    name: order_status
+    logicalType: string
+    physicalType: varchar(1)
+    description: 'Order status: F = fulfilled, O = open, P = partially fulfilled.'
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Order/orderStatus
+  - id: total_price
+    name: total_price
+    logicalType: number
+    physicalType: double
+    description: Total order price in dollars.
+  - id: order_date
+    name: order_date
+    logicalType: date
+    physicalType: date
+    description: Date the order was placed.
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Order/orderDate
+  - id: order_priority
+    name: order_priority
+    logicalType: string
+    physicalType: varchar(15)
+    description: 'Priority: 1-URGENT, 2-HIGH, 3-MEDIUM, 4-NOT SPECIFIED, 5-LOW.'
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Order/orderPriority
+  - id: clerk
+    name: clerk
+    logicalType: string
+    physicalType: varchar(15)
+    description: Clerk who processed the order.
+  - id: ship_priority
+    name: ship_priority
+    logicalType: integer
+    physicalType: integer
+    description: Shipping priority flag (integer).
+  - id: order_comment
+    name: order_comment
+    logicalType: string
+    physicalType: varchar(79)
+    description: Free-text comment about the order.
+- id: stg_line_items
+  name: stg_line_items
+  physicalName: stg_line_items
+  logicalType: object
+  physicalType: view
+  description: Cleaned line item records. One row per line item (order + line number). The most granular fact table.
+  relationships:
+  - type: foreignKey
+    from:
+    - stg_line_items.part_id
+    - stg_line_items.supplier_id
+    to:
+    - stg_part_suppliers.part_id
+    - stg_part_suppliers.supplier_id
+  authoritativeDefinitions:
+  - type: semantics
+    url: http://www.example.com/ns/tpch/LineItem
+  properties:
+  - id: order_id
+    name: order_id
+    logicalType: integer
+    physicalType: bigint
+    primaryKey: true
+    primaryKeyPosition: 1
+    required: true
+    description: Foreign key to stg_orders.
+    relationships:
+    - type: foreignKey
+      to: stg_orders.order_id
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Order/orderKey
+  - id: line_number
+    name: line_number
+    logicalType: integer
+    physicalType: integer
+    primaryKey: true
+    primaryKeyPosition: 2
+    required: true
+    description: Line number within the order (1-based).
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/LineItem/lineNumber
+  - id: part_id
+    name: part_id
+    logicalType: integer
+    physicalType: bigint
+    description: Foreign key to stg_parts.
+    relationships:
+    - type: foreignKey
+      to: stg_parts.part_id
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Part/partKey
+  - id: supplier_id
+    name: supplier_id
+    logicalType: integer
+    physicalType: bigint
+    description: Foreign key to stg_suppliers.
+    relationships:
+    - type: foreignKey
+      to: stg_suppliers.supplier_id
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Supplier/supplierKey
+  - id: quantity
+    name: quantity
+    logicalType: number
+    physicalType: double
+    description: Quantity ordered (1 to 50).
+  - id: extended_price
+    name: extended_price
+    logicalType: number
+    physicalType: double
+    description: Line item price before discount (quantity * retail price).
+  - id: discount
+    name: discount
+    logicalType: number
+    physicalType: double
+    description: Discount percentage as a decimal (0.00 to 0.10).
+  - id: tax
+    name: tax
+    logicalType: number
+    physicalType: double
+    description: Tax rate as a decimal (0.00 to 0.08).
+  - id: return_flag
+    name: return_flag
+    logicalType: string
+    physicalType: varchar(1)
+    description: 'Return status: R = returned, A = accepted, N = not yet received.'
+  - id: line_status
+    name: line_status
+    logicalType: string
+    physicalType: varchar(1)
+    description: 'Shipping status: F = shipped, O = not yet shipped.'
+  - id: ship_date
+    name: ship_date
+    logicalType: date
+    physicalType: date
+    description: Date the line item was shipped.
+  - id: commit_date
+    name: commit_date
+    logicalType: date
+    physicalType: date
+    description: Committed delivery date.
+  - id: receipt_date
+    name: receipt_date
+    logicalType: date
+    physicalType: date
+    description: Actual date the customer received the item.
+  - id: ship_instructions
+    name: ship_instructions
+    logicalType: string
+    physicalType: varchar(25)
+    description: Shipping instruction (DELIVER IN PERSON, COLLECT COD, TAKE BACK RETURN, NONE).
+  - id: ship_mode
+    name: ship_mode
+    logicalType: string
+    physicalType: varchar(10)
+    description: Shipping mode (AIR, FOB, MAIL, RAIL, REG AIR, SHIP, TRUCK).
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/LineItem/shipMode
+  - id: line_item_comment
+    name: line_item_comment
+    logicalType: string
+    physicalType: varchar(44)
+    description: Free-text comment about the line item.
+- id: stg_suppliers
+  name: stg_suppliers
+  physicalName: stg_suppliers
+  logicalType: object
+  physicalType: view
+  description: Cleaned supplier records. One row per supplier.
+  authoritativeDefinitions:
+  - type: semantics
+    url: http://www.example.com/ns/tpch/Supplier
+  properties:
+  - id: supplier_id
+    name: supplier_id
+    logicalType: integer
+    physicalType: bigint
+    primaryKey: true
+    primaryKeyPosition: 1
+    required: true
+    description: Unique supplier identifier.
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Supplier/supplierKey
+  - id: supplier_name
+    name: supplier_name
+    logicalType: string
+    physicalType: varchar(25)
+    description: Supplier name (format Supplier#NNNNNNNNN).
+  - id: supplier_address
+    name: supplier_address
+    logicalType: string
+    physicalType: varchar(40)
+    description: Street address of the supplier.
+  - id: nation_id
+    name: nation_id
+    logicalType: integer
+    physicalType: bigint
+    description: Foreign key to stg_nations.
+    relationships:
+    - type: foreignKey
+      to: stg_nations.nation_id
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Nation/nationKey
+  - id: supplier_phone
+    name: supplier_phone
+    logicalType: string
+    physicalType: varchar(15)
+    description: Phone number (format NN-NNN-NNN-NNNN).
+  - id: account_balance
+    name: account_balance
+    logicalType: number
+    physicalType: double
+    description: Account balance in dollars.
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/accountBalance
+  - id: supplier_comment
+    name: supplier_comment
+    logicalType: string
+    physicalType: varchar(101)
+    description: Free-text comment about the supplier.
+- id: stg_parts
+  name: stg_parts
+  physicalName: stg_parts
+  logicalType: object
+  physicalType: view
+  description: Cleaned part records. One row per part.
+  authoritativeDefinitions:
+  - type: semantics
+    url: http://www.example.com/ns/tpch/Part
+  properties:
+  - id: part_id
+    name: part_id
+    logicalType: integer
+    physicalType: bigint
+    primaryKey: true
+    primaryKeyPosition: 1
+    required: true
+    description: Unique part identifier.
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Part/partKey
+  - id: part_name
+    name: part_name
+    logicalType: string
+    physicalType: varchar(55)
+    description: Part name composed of randomly generated words.
+  - id: manufacturer
+    name: manufacturer
+    logicalType: string
+    physicalType: varchar(25)
+    description: Manufacturer name (format Manufacturer#N).
+  - id: brand
+    name: brand
+    logicalType: string
+    physicalType: varchar(10)
+    description: Brand name (format Brand#NN).
+  - id: part_type
+    name: part_type
+    logicalType: string
+    physicalType: varchar(25)
+    description: Part type as a 3-word compound (e.g. STANDARD POLISHED BRASS).
+  - id: part_size
+    name: part_size
+    logicalType: integer
+    physicalType: integer
+    description: Part size as an integer from 1 to 50.
+  - id: container
+    name: container
+    logicalType: string
+    physicalType: varchar(10)
+    description: Shipping container type (e.g. SM CASE, LG BOX, MED PKG).
+  - id: retail_price
+    name: retail_price
+    logicalType: number
+    physicalType: double
+    description: Retail price per unit in dollars.
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Part/retailPrice
+  - id: part_comment
+    name: part_comment
+    logicalType: string
+    physicalType: varchar(23)
+    description: Free-text comment about the part.
+- id: stg_part_suppliers
+  name: stg_part_suppliers
+  physicalName: stg_part_suppliers
+  logicalType: object
+  physicalType: view
+  description: Cleaned part-supplier records. One row per part-supplier combination.
+  properties:
+  - id: part_id
+    name: part_id
+    logicalType: integer
+    physicalType: bigint
+    primaryKey: true
+    primaryKeyPosition: 1
+    required: true
+    description: Foreign key to stg_parts.
+    relationships:
+    - type: foreignKey
+      to: stg_parts.part_id
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Part/partKey
+  - id: supplier_id
+    name: supplier_id
+    logicalType: integer
+    physicalType: bigint
+    primaryKey: true
+    primaryKeyPosition: 2
+    required: true
+    description: Foreign key to stg_suppliers.
+    relationships:
+    - type: foreignKey
+      to: stg_suppliers.supplier_id
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Supplier/supplierKey
+  - id: available_quantity
+    name: available_quantity
+    logicalType: integer
+    physicalType: integer
+    description: Units available from this supplier for this part.
+  - id: supply_cost
+    name: supply_cost
+    logicalType: number
+    physicalType: double
+    description: Cost per unit from this supplier, in dollars.
+  - id: partsupplier_comment
+    name: partsupplier_comment
+    logicalType: string
+    physicalType: varchar(199)
+    description: Free-text comment about this part-supplier relationship.

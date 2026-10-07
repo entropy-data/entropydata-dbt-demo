@@ -58,7 +58,7 @@ impl ForgejoClient {
         });
         let owner = std::env::var("FORGEJO_OWNER").unwrap_or_else(|_| "stackable".to_string());
         let repo = std::env::var("FORGEJO_REPO")
-            .unwrap_or_else(|_| "openmetadata-dbt-demo".to_string());
+            .unwrap_or_else(|_| "entropydata-dbt-demo".to_string());
         let branch = std::env::var("FORGEJO_BRANCH").unwrap_or_else(|_| "main".to_string());
         let username = std::env::var("FORGEJO_USERNAME")
             .map_err(|_| anyhow::anyhow!("FORGEJO_USERNAME env var is required"))?;
