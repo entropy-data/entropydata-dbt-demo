@@ -21,6 +21,9 @@ outputPorts:
   version: 1.0.0
   type: trino
   contractId: tpch-core
+  customProperties:
+  - property: displayName
+    value: Core
 tags:
 - tpch
 - source-aligned

@@ -21,6 +21,9 @@ outputPorts:
   version: 1.0.0
   type: trino
   contractId: tpch-revenue-by-region
+  customProperties:
+  - property: displayName
+    value: Revenue by Region
 tags:
 - tpch
 - consumer-aligned

@@ -11,11 +11,14 @@ description:
 team:
   name: analytics-engineering
 outputPorts:
-  - name: trino-tpch-tiny
-    description: The eight TPC-H tables in tpch.tiny.
-    version: 1.0.0
-    type: trino
-    contractId: tpch-source
+- name: trino-tpch-tiny
+  description: The eight TPC-H tables in tpch.tiny.
+  version: 1.0.0
+  type: trino
+  contractId: tpch-source
+  customProperties:
+  - property: displayName
+    value: Source Data
 tags:
-  - tpch
-  - source-aligned
+- tpch
+- source-aligned

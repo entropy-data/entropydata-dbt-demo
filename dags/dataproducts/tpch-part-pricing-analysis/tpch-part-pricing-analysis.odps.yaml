@@ -21,6 +21,9 @@ outputPorts:
   version: 1.0.0
   type: trino
   contractId: tpch-part-pricing-analysis
+  customProperties:
+  - property: displayName
+    value: Part Pricing Analysis
 tags:
 - tpch
 - consumer-aligned

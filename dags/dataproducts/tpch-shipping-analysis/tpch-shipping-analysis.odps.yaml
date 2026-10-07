@@ -22,6 +22,9 @@ outputPorts:
   version: 1.0.0
   type: trino
   contractId: tpch-shipping-analysis
+  customProperties:
+  - property: displayName
+    value: Shipping Analysis
 tags:
 - tpch
 - consumer-aligned

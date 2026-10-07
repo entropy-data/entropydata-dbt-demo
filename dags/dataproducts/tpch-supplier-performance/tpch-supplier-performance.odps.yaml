@@ -21,6 +21,9 @@ outputPorts:
   version: 1.0.0
   type: trino
   contractId: tpch-supplier-performance
+  customProperties:
+  - property: displayName
+    value: Supplier Performance
 tags:
 - tpch
 - consumer-aligned

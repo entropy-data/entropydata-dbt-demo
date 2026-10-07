@@ -23,6 +23,9 @@ outputPorts:
   version: 1.0.0
   type: trino
   contractId: tpch-order-summary
+  customProperties:
+  - property: displayName
+    value: Order Summary
 tags:
 - tpch
 - consumer-aligned

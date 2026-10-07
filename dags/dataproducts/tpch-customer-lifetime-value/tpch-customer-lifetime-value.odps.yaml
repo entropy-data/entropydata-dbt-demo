@@ -21,6 +21,9 @@ outputPorts:
   version: 1.0.0
   type: trino
   contractId: tpch-customer-lifetime-value
+  customProperties:
+  - property: displayName
+    value: Customer Lifetime Value
 tags:
 - tpch
 - consumer-aligned
