@@ -14,7 +14,7 @@ spec:
   sources:
     # The chart is not published to a Helm repository, so ArgoCD renders it straight from Git.
     - repoURL: "https://github.com/entropy-data/entropy-data-helm.git"
-      targetRevision: "5b05493e00dd10816c476d74fb0c8b42fbd5c71f" # entropy-data/entropy-data-helm#2 (extraVolumes/initContainers); pin to the merge commit once merged
+      targetRevision: "474fcb98542c8ef962130b3c5b7ef034057bbfa8" # entropy-data-helm main, incl. #2 (initContainers, extraVolumes)
       path: .
       helm:
         releaseName: entropy-data
