@@ -13,7 +13,8 @@ deploy branch="main":
 retarget branch:
     #!/usr/bin/env bash
     set -euo pipefail
-    sed -i -E 's|targetRevision: "[a-zA-Z][a-zA-Z0-9_/-]*"|targetRevision: "{{branch}}"|g' platform/applications/*.yaml
+    # Full commit SHAs (e.g. the pinned entropy-data-helm chart) are left alone.
+    sed -i -E '/targetRevision: "[0-9a-f]{40}"/!s|targetRevision: "[a-zA-Z][a-zA-Z0-9_/-]*"|targetRevision: "{{branch}}"|g' platform/applications/*.yaml
     sed -i -E 's|refs/heads/[a-zA-Z][a-zA-Z0-9_/-]*/infrastructure/|refs/heads/{{branch}}/infrastructure/|g' infrastructure/stack.yaml
     echo "Retargeted to {{branch}}. Review with 'git diff' and commit when happy."
 
