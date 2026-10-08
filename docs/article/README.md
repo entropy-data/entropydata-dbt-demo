@@ -24,6 +24,10 @@ Die Umsetzung übernimmt ein Coding Agent. Er erhält drei Dinge: den Contract a
 
 [![Video: Nation Scorecard, contract-first mit Stackable + Entropy Data](https://img.youtube.com/vi/sFB_Yt6kUtc/maxresdefault.jpg)](https://youtu.be/sFB_Yt6kUtc)
 
+## Freie Wahl auf jeder Ebene
+
+Die Demo zeigt eine mögliche Zusammenstellung, keine feste. Auf der Plattform-Ebene lässt sich Stackable erweitern: Stackable bringt Operatoren für weitere Komponenten wie Spark, Druid oder HBase mit, und weil alles auf Kubernetes läuft, finden auch eigene Dienste und bestehende Systeme ihren Platz. Auf der Governance-Ebene gilt dasselbe. Entropy Data setzt auf ODCS, ODPS und OpenLineage, sodass sich weitere Werkzeuge anbinden lassen, etwa ein vorhandener Data Catalog, eigene Qualitäts-Checks oder zusätzliche Regeln in OPA. Data Contracts und Daten-Produkte liegen als offene Standards im eigenen Git-Repository. Die Entscheidung, welche Werkzeuge zum Einsatz kommen, bleibt beim Unternehmen.
+
 ## Warum das zusammenpasst
 
 Offene Standards sind dabei mehr als ein Prinzip. Sie geben dem Agent einen klaren Rahmen: Der Contract ist maschinenlesbar, die Tests sind deterministisch, und das Ergebnis lässt sich überprüfen. So wird aus einer Anweisung ein verlässliches Ergebnis.
