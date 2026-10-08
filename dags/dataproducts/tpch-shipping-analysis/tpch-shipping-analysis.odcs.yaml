@@ -35,10 +35,16 @@ schema:
     logicalType: string
     physicalType: varchar
     description: Geographic region of the receiving customer.
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Region/regionName
   - name: customer_nation
     logicalType: string
     physicalType: varchar
     description: Nation of the receiving customer.
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Nation/nationName
   - name: shipment_count
     logicalType: integer
     physicalType: bigint

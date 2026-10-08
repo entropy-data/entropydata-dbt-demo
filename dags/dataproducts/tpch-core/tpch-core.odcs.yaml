@@ -43,6 +43,9 @@ schema:
     logicalType: string
     physicalType: varchar(25)
     description: Region name (AFRICA, AMERICA, ASIA, EUROPE, MIDDLE EAST).
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Region/regionName
   - id: region_comment
     name: region_comment
     logicalType: string
@@ -74,6 +77,9 @@ schema:
     logicalType: string
     physicalType: varchar(25)
     description: Nation name (e.g. UNITED STATES, GERMANY, CHINA).
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Nation/nationName
   - id: region_id
     name: region_id
     logicalType: integer

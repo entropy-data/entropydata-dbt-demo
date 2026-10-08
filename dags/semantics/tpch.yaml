@@ -34,6 +34,17 @@ concepts:
     required: true
     description: Unique identifier of a region. Joins nations to their region.
     iri: http://www.example.com/ns/tpch/Region/regionKey
+  - id: region-name
+    name: Region Name
+    data_type: string
+    description: 'Name of a region: AFRICA, AMERICA, ASIA, EUROPE or MIDDLE EAST.'
+    iri: http://www.example.com/ns/tpch/Region/regionName
+    enum:
+    - AFRICA
+    - AMERICA
+    - ASIA
+    - EUROPE
+    - MIDDLE EAST
 - id: nation
   name: Nation
   description: A country. Customers and suppliers are located in exactly one nation.
@@ -45,6 +56,14 @@ concepts:
     required: true
     description: Unique identifier of a nation. Joins customers and suppliers to their nation.
     iri: http://www.example.com/ns/tpch/Nation/nationKey
+  - id: nation-name
+    name: Nation Name
+    data_type: string
+    description: Name of a nation, for example GERMANY. Joins data that is reported per nation.
+    iri: http://www.example.com/ns/tpch/Nation/nationName
+    examples:
+    - GERMANY
+    - UNITED STATES
 - id: customer
   name: Customer
   description: A business that places orders, assigned to a market segment.

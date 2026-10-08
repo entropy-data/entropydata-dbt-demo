@@ -52,10 +52,16 @@ schema:
     logicalType: string
     physicalType: varchar
     description: Nation where the customer is located.
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Nation/nationName
   - name: customer_region
     logicalType: string
     physicalType: varchar
     description: Geographic region where the customer is located.
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Region/regionName
   - name: account_balance
     logicalType: number
     physicalType: double

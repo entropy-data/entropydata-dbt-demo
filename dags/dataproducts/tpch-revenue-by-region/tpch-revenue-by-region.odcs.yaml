@@ -27,10 +27,16 @@ schema:
     logicalType: string
     physicalType: varchar
     description: Geographic region name.
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Region/regionName
   - name: nation_name
     logicalType: string
     physicalType: varchar
     description: Nation name within the region.
+    authoritativeDefinitions:
+    - type: semantics
+      url: http://www.example.com/ns/tpch/Nation/nationName
   - name: customer_count
     logicalType: integer
     physicalType: bigint
