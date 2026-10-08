@@ -1,18 +1,34 @@
 # Daten-Produkte bauen auf einer offenen Plattform: Stackable + Entropy Data
 
-Viele Unternehmen wollen eine moderne Datenplattform, ohne sich an einen Anbieter zu binden. Unsere Demo zeigt, wie das geht: eine offene Plattform aus Open Source und offenen Standards, selbst gehostet und vollständig unter eigener Kontrolle.
+Viele Unternehmen wollen eine moderne Datenplattform, ohne sich an einen Anbieter zu binden. Proprietäre Cloud-Angebote sind schnell eingerichtet, doch Daten, Logik und Wissen landen in einem geschlossenen System. Unsere Demo zeigt einen anderen Weg: eine offene Plattform aus Open Source und offenen Standards, selbst gehostet und vollständig unter eigener Kontrolle.
 
 ![Überblick: Stackable unten, Daten-Produkte in der Mitte, Entropy Data oben](overview.png)
 
-Die Stackable Data Platform betreibt bewährte Open-Source-Komponenten wie Trino, Airflow und Kafka auf Kubernetes. Darauf entstehen Daten-Produkte, die aufeinander aufbauen. Entropy Data macht sie als Marktplatz auffindbar und verwaltet Data Contracts, Semantik, Lineage und Zugriffe. Alles basiert auf offenen Standards wie ODCS, ODPS und OpenLineage. Sicherheit und Support sind abgedeckt, ein Vendor Lock-in entsteht nicht.
+## Die Plattform: Stackable
+
+Die Stackable Data Platform bildet das Fundament. Sie betreibt bewährte Open-Source-Komponenten wie Trino, Airflow, Kafka, NiFi und Superset auf Kubernetes, egal ob im eigenen Rechenzentrum oder in der Cloud. Die Komponenten sind aufeinander abgestimmt, sicher konfiguriert und werden per GitOps ausgerollt. Für Sicherheit und Support sorgt Stackable, ohne dass ein Vendor Lock-in entsteht.
+
+## Der Marktplatz: Entropy Data
+
+Auf der Plattform entstehen Daten-Produkte, die aufeinander aufbauen. Entropy Data macht sie als Marktplatz auffindbar und nutzbar. Jedes Daten-Produkt hat einen Data Contract, der beschreibt, welche Daten es liefert und was sie bedeuten. Eine gemeinsame Business-Ontologie verbindet Begriffe wie Kunde, Land oder Marke über alle Daten-Produkte hinweg. Lineage zeigt, wie die Daten fließen, und Zugriffe werden über den Marktplatz beantragt und genehmigt. Trino fragt bei jeder Abfrage nach, ob der Zugriff erlaubt ist. Alles basiert auf offenen Standards: ODCS für Data Contracts, ODPS für Daten-Produkte und OpenLineage für Lineage.
 
 ![Contract-first: Data Contract, Skills und Marktplatz führen über den Coding Agent zum Daten-Produkt](contract-first.png)
 
-Im Video bauen wir eine „Nation Scorecard“, und zwar contract-first. Zuerst beschreibt der Data Contract, was entstehen soll. Über den Marktplatz verbinden wir die vier Daten-Produkte, auf denen die Scorecard aufbaut. Die Umsetzung übernimmt ein Coding Agent: Er kennt über Skills die Konventionen der Plattform und erhält eine einzige Anweisung: „Implementiere das Daten-Produkt.“ Nach wenigen Minuten ist es gebaut, getestet und veröffentlicht, inklusive Lineage.
+## Contract-first, mit einem Coding Agent
+
+Im Video bauen wir eine „Nation Scorecard“: eine Übersicht, wie sich jedes Land als Markt entwickelt, mit Umsatz, Kundenwert, Lieferqualität und lokalen Lieferanten.
+
+Zuerst kommt der Data Contract. Er beschreibt, was entstehen soll, bevor eine Zeile Code existiert. Land und Region werden nicht neu definiert, sondern aus der Business-Ontologie übernommen. Aus dem Contract entsteht mit einem Klick das Daten-Produkt. Über den Marktplatz verbinden wir die vier bestehenden Daten-Produkte, auf denen die Scorecard aufbaut.
+
+Die Umsetzung übernimmt ein Coding Agent. Er erhält drei Dinge: den Contract als Beschreibung, was zu bauen ist; Skills, die die Konventionen der Plattform kennen; und den Marktplatz mit den Daten, auf denen er aufbauen kann. Die Anweisung ist ein einziger Satz: „Implementiere das Daten-Produkt.“ Der Agent schreibt das dbt-Projekt, baut die Tabelle in Trino, testet sie gegen den Data Contract und veröffentlicht alles im Marktplatz, inklusive Lineage. Nach wenigen Minuten ist das neue Daten-Produkt aktiv.
 
 [![Video: Nation Scorecard, contract-first mit Stackable + Entropy Data](https://img.youtube.com/vi/sFB_Yt6kUtc/maxresdefault.jpg)](https://youtu.be/sFB_Yt6kUtc)
 
-Die Rolle des Menschen verschiebt sich damit: weg vom Programmieren, hin zur Frage, was gebaut werden soll und welchen Wert es stiftet.
+## Warum das zusammenpasst
+
+Offene Standards sind dabei mehr als ein Prinzip. Sie geben dem Agent einen klaren Rahmen: Der Contract ist maschinenlesbar, die Tests sind deterministisch, und das Ergebnis lässt sich überprüfen. So wird aus einer Anweisung ein verlässliches Ergebnis.
+
+Die Rolle des Menschen verschiebt sich: weg vom Programmieren, hin zur Frage, was gebaut werden soll und welchen Wert es stiftet. Die Plattform sorgt dafür, dass jedes neue Daten-Produkt auf offenen Standards steht und sich nahtlos in die bestehende Datenlandschaft einfügt.
 
 ![Architektur im Stil von datamesh-architecture.com](../architecture/architecture.png)
 
