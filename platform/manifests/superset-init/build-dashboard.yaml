@@ -179,7 +179,7 @@ data:
         return (
             "### Nation Scorecard\n"
             "How each nation is doing as a market. Built on the data product "
-            f"[Nation Scorecard]({ED_PUBLIC}/{ORG}/marketplace/dataproducts/nation-scorecard) "
+            f"[Nation Scorecard]({ED_PUBLIC}/{ORG}/dataproducts/nation-scorecard) "
             "and its data contract `nation-scorecard` in Entropy Data, "
             "queried through Trino (`\"hive-iceberg\".nation_scorecard.nation_scorecard`)."
         )
