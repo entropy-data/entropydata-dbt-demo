@@ -1,0 +1,12 @@
+---
+# Stackable CA as ConfigMap, so Superset can verify Trino's TLS certificate
+# (mounted at /stackable/trino-ca, used by the "Trino" database connection).
+apiVersion: secrets.stackable.tech/v1alpha1
+kind: TrustStore
+metadata:
+  name: superset-tls-truststore
+  namespace: platform
+spec:
+  secretClassName: tls
+  format: tls-pem
+  targetKind: ConfigMap

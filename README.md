@@ -160,11 +160,15 @@ Data products live as code in `dags/dataproducts/<data-product-id>/`: an ODPS fi
 | `tpch-source` | Source-aligned: the TPC-H tables in `tpch.tiny`, described by an ODCS contract |
 | `tpch-core` | Source-aligned: dbt project with 8 cleaned staging views (`stg_*`) in `hive-iceberg.demo`, input port from `tpch-source` |
 | `tpch-order-summary`, `tpch-supplier-performance`, `tpch-revenue-by-region`, `tpch-customer-lifetime-value`, `tpch-shipping-analysis`, `tpch-part-pricing-analysis` | Consumer-aligned: one dbt project and one mart table each in `hive-iceberg.demo`, input port from `tpch-core`, one output port and data contract each |
+| `nation-scorecard` | Consumer-aligned: one row per nation in `hive-iceberg.nation_scorecard`, built on four marts (revenue by region, customer lifetime value, shipping analysis, supplier performance). Built contract-first by a coding agent in the demo video |
+| `nation-scorecard-dashboard` | Data consumer: the Superset dashboard "Nation Scorecard" on top of `nation-scorecard`, with an approved access agreement. Created by `platform/manifests/superset-init/` |
 
-`dags/dataproduct_dags.py` generates one Airflow DAG per folder (`dataproduct_<id>`). DAGs are chained along the ODPS input ports with Airflow assets: `tpch-source` runs daily, `tpch-core` runs after it, and the six marts run after `tpch-core`. Each DAG:
+`dags/dataproduct_dags.py` generates one Airflow DAG per folder (`dataproduct_<id>`). DAGs are chained along the ODPS input ports with Airflow assets: `tpch-source` runs daily, `tpch-core` runs after it, the six marts run after `tpch-core`, and `nation-scorecard` runs after its four marts. Each DAG:
 1. Publishes the ODPS and ODCS files to Entropy Data
 2. Runs `dbt-ol build` (if there is a dbt project); `dbt-ol` sends OpenLineage events to Entropy Data, linked to the data product
 3. Runs `datacontract test` for each output port contract against Trino and publishes the results to Entropy Data
+
+The job in `platform/manifests/superset-init/` builds the Superset dashboard "Nation Scorecard" on the `nation-scorecard` table (Trino connection, dataset, charts) and registers it in Entropy Data as a data consumer (type `dataconsumer`) with an input port and an approved access agreement, so the lineage shows the dashboard downstream of the data products it uses. It retries until the table exists.
 
 To add a data product, add a folder and push it to the in-cluster Forgejo. The [entropydata-dbt-demo-builder](https://github.com/entropy-data/entropydata-dbt-demo-builder) coding-agent plugin scaffolds and implements such folders.
 
@@ -219,6 +223,7 @@ platform/                          # Everything ArgoCD manages after bootstrap
     ├── entropy-data/              # pgvector PostgreSQL, NodePort, CA truststore, sealed DB secret
     ├── entropy-data-init/         # Org, SSO auto join, API key, team, Trino integration
     ├── superset/                  # Apache Superset deployment
+    ├── superset-init/             # Nation Scorecard dashboard + data consumer in Entropy Data
     ├── superset-postgres/         # PostgreSQL for Superset
     └── ...                        # HDFS, Hive, Kafka, NiFi, ZooKeeper, etc.
 

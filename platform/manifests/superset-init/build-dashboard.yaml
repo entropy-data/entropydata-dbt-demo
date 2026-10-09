@@ -1,0 +1,423 @@
+---
+# Builds the "Nation Scorecard" dashboard in Superset on top of the nation-scorecard data product
+# (table "hive-iceberg".nation_scorecard.nation_scorecard in Trino) and registers the dashboard in
+# Entropy Data as a data consumer: a data product of type `dataconsumer` with an input port to
+# Nation Scorecard and an approved access agreement. The Entropy Data lineage then shows the
+# dashboard downstream of the data products it is built on.
+#
+# The job retries until the table exists (built by the Airflow DAG dataproduct_nation_scorecard)
+# and the Entropy Data API key has been stored by the entropy-data-init job.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: superset-dashboard-script
+  namespace: platform
+data:
+  build_dashboard.py: |
+    import base64
+    import datetime
+    import http.cookiejar
+    import json
+    import os
+    import ssl
+    import sys
+    import time
+    import urllib.error
+    import urllib.request
+
+    SUPERSET = os.environ["SUPERSET_URL"].rstrip("/")
+    ED = os.environ["ED_INTERNAL_URL"].rstrip("/")
+    ED_PUBLIC = os.environ["ED_PUBLIC_URL"].rstrip("/")
+    ORG = os.environ.get("ED_ORGANIZATION", "myorga")
+    TRINO_URI = (
+        f"trino://{os.environ['TRINO_USER']}:{os.environ['TRINO_PASSWORD']}"
+        f"@{os.environ['TRINO_HOST']}:{os.environ.get('TRINO_PORT', '8443')}/hive-iceberg"
+    )
+    # Superset itself connects to Trino, so the CA path is the one mounted into the Superset pods
+    TRINO_CA = os.environ.get("SUPERSET_TRINO_CA", "/stackable/trino-ca/ca.crt")
+    SCHEMA, TABLE = "nation_scorecard", "nation_scorecard"
+    SLUG = "nation-scorecard"
+    CONSUMER_ID = "nation-scorecard-dashboard"
+
+
+    # --- Superset REST API ---------------------------------------------------------
+
+    class Superset:
+        def __init__(self):
+            self.opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
+            self.headers = {"Content-Type": "application/json", "Referer": SUPERSET}
+
+        def call(self, method, path, body=None):
+            req = urllib.request.Request(
+                f"{SUPERSET}{path}",
+                data=json.dumps(body).encode() if body is not None else None,
+                headers=self.headers,
+                method=method,
+            )
+            try:
+                with self.opener.open(req, timeout=60) as resp:
+                    return json.loads(resp.read().decode() or "{}")
+            except urllib.error.HTTPError as e:
+                raise RuntimeError(f"Superset {method} {path} failed with {e.code}: {e.read().decode()[:500]}") from e
+
+        def login(self):
+            token = self.call("POST", "/api/v1/security/login", {
+                "username": os.environ["SUPERSET_USER"],
+                "password": os.environ["SUPERSET_PASSWORD"],
+                "provider": "db",
+                "refresh": True,
+            })["access_token"]
+            self.headers["Authorization"] = f"Bearer {token}"
+            self.headers["X-CSRFToken"] = self.call("GET", "/api/v1/security/csrf_token/")["result"]
+
+        def find(self, resource, column, value):
+            q = f"(filters:!((col:{column},opr:eq,value:'{value}')))"
+            result = self.call("GET", f"/api/v1/{resource}/?q={urllib.request.quote(q)}")["result"]
+            return result[0]["id"] if result else None
+
+
+    def wait_for(url):
+        for _ in range(60):
+            try:
+                urllib.request.urlopen(url, timeout=10)
+                return
+            except Exception as e:
+                print(f"  Waiting for {url}: {e}")
+                time.sleep(10)
+        sys.exit(f"ERROR: {url} did not become ready.")
+
+
+    def ensure_database(s):
+        db_id = s.find("database", "database_name", "Trino")
+        if db_id:
+            return db_id
+        print("Creating the Trino database connection ...")
+        return s.call("POST", "/api/v1/database/", {
+            "database_name": "Trino",
+            "sqlalchemy_uri": TRINO_URI,
+            "expose_in_sqllab": True,
+            "extra": json.dumps({"engine_params": {"connect_args": {"http_scheme": "https", "verify": TRINO_CA}}}),
+        })["id"]
+
+
+    def ensure_dataset(s, db_id):
+        ds_id = s.find("dataset", "table_name", TABLE)
+        if ds_id:
+            return ds_id
+        print(f"Creating the dataset {SCHEMA}.{TABLE} ...")
+        try:
+            return s.call("POST", "/api/v1/dataset/", {
+                "database": db_id, "catalog": "hive-iceberg", "schema": SCHEMA, "table_name": TABLE,
+            })["id"]
+        except RuntimeError as e:
+            # Raised until the Airflow DAG of the nation-scorecard data product has built the table
+            sys.exit(f"Table not available yet, retrying later: {e}")
+
+
+    def metric(column, aggregate="SUM", label=None):
+        return {
+            "expressionType": "SIMPLE",
+            "column": {"column_name": column},
+            "aggregate": aggregate,
+            "label": label or f"{aggregate}({column})",
+        }
+
+
+    def charts(ds_id):
+        ds = f"{ds_id}__table"
+        revenue = metric("net_revenue", label="Net revenue")
+        return [
+            ("Net revenue", 3, 24, {
+                "viz_type": "big_number_total", "datasource": ds, "metric": revenue,
+                "subheader": "all nations", "y_axis_format": "SMART_NUMBER",
+            }),
+            ("Customers", 3, 24, {
+                "viz_type": "big_number_total", "datasource": ds,
+                "metric": metric("customer_count", label="Customers"),
+                "subheader": "who ordered", "y_axis_format": "SMART_NUMBER",
+            }),
+            ("Late delivery rate", 3, 24, {
+                "viz_type": "big_number_total", "datasource": ds,
+                "metric": {"expressionType": "SQL", "label": "Late delivery rate",
+                           "sqlExpression": "SUM(late_delivery_rate * order_count) / SUM(order_count)"},
+                "subheader": "weighted by orders", "y_axis_format": ".1%",
+            }),
+            ("Local suppliers", 3, 24, {
+                "viz_type": "big_number_total", "datasource": ds,
+                "metric": metric("local_suppliers", label="Local suppliers"),
+                "subheader": "across all nations", "y_axis_format": "SMART_NUMBER",
+            }),
+            ("Net revenue by nation", 8, 90, {
+                "viz_type": "echarts_timeseries_bar", "datasource": ds,
+                "x_axis": "nation", "metrics": [revenue], "groupby": [],
+                "orientation": "horizontal", "x_axis_sort": "Net revenue", "x_axis_sort_asc": True,
+                "row_limit": 100, "show_legend": False, "y_axis_format": "SMART_NUMBER",
+                "x_axis_title": "", "y_axis_title": "", "show_value": False,
+            }),
+            ("Net revenue by region", 4, 90, {
+                "viz_type": "pie", "datasource": ds, "groupby": ["region"], "metric": revenue,
+                "show_labels": True, "label_type": "percent", "labels_outside": False, "donut": True, "show_legend": True, "legendOrientation": "right",
+            }),
+            ("Scorecard", 12, 70, {
+                "viz_type": "table", "datasource": ds, "query_mode": "raw",
+                "all_columns": ["nation", "region", "net_revenue", "order_count", "customer_count",
+                                "avg_customer_lifetime_value", "late_delivery_rate", "return_rate",
+                                "local_suppliers", "local_supplier_revenue"],
+                "order_by_cols": [json.dumps(["net_revenue", False])], "row_limit": 100,
+                "column_config": {
+                    "net_revenue": {"d3NumberFormat": ",.0f"},
+                    "avg_customer_lifetime_value": {"d3NumberFormat": ",.0f"},
+                    "local_supplier_revenue": {"d3NumberFormat": ",.0f"},
+                    "late_delivery_rate": {"d3NumberFormat": ".1%"},
+                    "return_rate": {"d3NumberFormat": ".1%"},
+                },
+            }),
+        ]
+
+
+    def intro_markdown():
+        return (
+            "### Nation Scorecard\n"
+            "How each nation is doing as a market. Built on the data product "
+            f"[Nation Scorecard]({ED_PUBLIC}/{ORG}/marketplace/dataproducts/nation-scorecard) "
+            "and its data contract `nation-scorecard` in Entropy Data, "
+            "queried through Trino (`\"hive-iceberg\".nation_scorecard.nation_scorecard`)."
+        )
+
+
+    def build_dashboard(s, ds_id):
+        existing = s.find("dashboard", "slug", SLUG)
+        if existing:
+            # Rebuild, so changes to this script take effect when the job runs again
+            print(f"Replacing the existing dashboard '{SLUG}' (id {existing}) ...")
+            for chart in s.call("GET", f"/api/v1/dashboard/{existing}/charts")["result"]:
+                s.call("DELETE", f"/api/v1/chart/{chart['id']}")
+            s.call("DELETE", f"/api/v1/dashboard/{existing}")
+        print("Creating the dashboard ...")
+        dashboard_id = s.call("POST", "/api/v1/dashboard/", {
+            "dashboard_title": "Nation Scorecard", "slug": SLUG, "published": True,
+        })["id"]
+
+        layout = {
+            "DASHBOARD_VERSION_KEY": "v2",
+            "ROOT_ID": {"type": "ROOT", "id": "ROOT_ID", "children": ["GRID_ID"]},
+            "GRID_ID": {"type": "GRID", "id": "GRID_ID", "children": [], "parents": ["ROOT_ID"]},
+            "HEADER_ID": {"type": "HEADER", "id": "HEADER_ID", "meta": {"text": "Nation Scorecard"}},
+        }
+
+        def row(items):
+            row_id = f"ROW-{len(layout['GRID_ID']['children']) + 1}"
+            layout["GRID_ID"]["children"].append(row_id)
+            layout[row_id] = {"type": "ROW", "id": row_id, "children": [], "parents": ["ROOT_ID", "GRID_ID"],
+                              "meta": {"background": "BACKGROUND_TRANSPARENT"}}
+            for item_id, item in items:
+                item["parents"] = ["ROOT_ID", "GRID_ID", row_id]
+                layout[row_id]["children"].append(item_id)
+                layout[item_id] = item
+
+        row([("MARKDOWN-intro", {"type": "MARKDOWN", "id": "MARKDOWN-intro", "children": [],
+                                 "meta": {"width": 12, "height": 14, "code": intro_markdown()}})])
+        current, used = [], 0
+        for name, width, height, params in charts(ds_id):
+            chart_id = s.call("POST", "/api/v1/chart/", {
+                "slice_name": name, "viz_type": params["viz_type"], "datasource_id": ds_id,
+                "datasource_type": "table", "params": json.dumps(params), "dashboards": [dashboard_id],
+            })["id"]
+            print(f"  Chart '{name}' (id {chart_id})")
+            if used + width > 12:
+                row(current)
+                current, used = [], 0
+            key = f"CHART-{chart_id}"
+            current.append((key, {"type": "CHART", "id": key, "children": [],
+                                  "meta": {"width": width, "height": height, "chartId": chart_id, "sliceName": name}}))
+            used += width
+        row(current)
+
+        s.call("PUT", f"/api/v1/dashboard/{dashboard_id}", {
+            "position_json": json.dumps(layout),
+            "json_metadata": json.dumps({"color_scheme": "supersetColors", "refresh_frequency": 0}),
+        })
+        return dashboard_id
+
+
+    # --- Entropy Data --------------------------------------------------------------
+
+    def k8s_get(path):
+        token = open("/var/run/secrets/kubernetes.io/serviceaccount/token").read()
+        ctx = ssl.create_default_context(cafile="/var/run/secrets/kubernetes.io/serviceaccount/ca.crt")
+        req = urllib.request.Request(f"https://kubernetes.default.svc{path}", headers={"Authorization": f"Bearer {token}"})
+        with urllib.request.urlopen(req, context=ctx) as resp:
+            return json.loads(resp.read())
+
+
+    def dashboard_public_url():
+        """The browser URL of the dashboard: node IP plus the NodePort of the Superset listener."""
+        if os.environ.get("SUPERSET_PUBLIC_URL"):
+            return f"{os.environ['SUPERSET_PUBLIC_URL'].rstrip('/')}/superset/dashboard/{SLUG}/"
+        ns = open("/var/run/secrets/kubernetes.io/serviceaccount/namespace").read().strip()
+        node_ip = k8s_get(f"/api/v1/namespaces/{ns}/configmaps/oidc-endpoints")["data"]["node-ip"]
+        ports = k8s_get(f"/api/v1/namespaces/{ns}/services/{os.environ['SUPERSET_SERVICE']}")["spec"]["ports"]
+        node_port = next(p["nodePort"] for p in ports if p.get("nodePort"))
+        return f"http://{node_ip}:{node_port}/superset/dashboard/{SLUG}/"
+
+
+    def ed_put(path, body):
+        api_key = os.environ.get("ENTROPY_DATA_API_KEY")
+        if not api_key:
+            sys.exit("ENTROPY_DATA_API_KEY not set yet (entropy-data-init job still running?), retrying later.")
+        req = urllib.request.Request(
+            f"{ED}{path}", data=json.dumps(body).encode(), method="PUT",
+            headers={"Content-Type": "application/json", "x-api-key": api_key},
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                print(f"  PUT {path} -> {resp.status}")
+        except urllib.error.HTTPError as e:
+            raise RuntimeError(f"PUT {path} failed with {e.code}: {e.read().decode()[:500]}") from e
+
+
+    def register_in_entropy_data(url):
+        print("Registering the dashboard in Entropy Data as data consumer ...")
+        ed_put(f"/api/dataproducts/{CONSUMER_ID}", {
+            "apiVersion": "v1.0.0",
+            "kind": "DataProduct",
+            "id": CONSUMER_ID,
+            "name": "Nation Scorecard Dashboard",
+            "status": "active",
+            "domain": "sales",
+            "description": {
+                "purpose": "Superset dashboard for market reviews: revenue, customers, delivery quality "
+                           "and local supply per nation.",
+                "usage": f"Open the dashboard in Superset: {url}",
+                "authoritativeDefinitions": [{"type": "dashboard", "url": url}],
+            },
+            "team": {"name": "analytics-engineering"},
+            "inputPorts": [{"name": "nation-scorecard", "version": "1.0.0", "contractId": "nation-scorecard"}],
+            "tags": ["superset", "dashboard"],
+            "customProperties": [
+                {"property": "type", "value": "dataconsumer"},
+                {"property": "visibility", "value": "public"},
+            ],
+        })
+        ed_put(f"/api/access/{CONSUMER_ID}-nation-scorecard", {
+            "id": f"{CONSUMER_ID}-nation-scorecard",
+            "info": {
+                "purpose": "The Nation Scorecard dashboard in Superset shows revenue, customers, "
+                           "delivery quality and local supply per nation for market reviews.",
+                "status": "approved",
+                "startDate": datetime.date.today().isoformat(),
+            },
+            "provider": {"teamId": "analytics-engineering", "dataProductId": "nation-scorecard",
+                         "outputPortId": "nation-scorecard"},
+            "consumer": {"teamId": "analytics-engineering", "dataProductId": CONSUMER_ID},
+        })
+
+
+    def main():
+        wait_for(f"{SUPERSET}/health")
+        s = Superset()
+        s.login()
+        db_id = ensure_database(s)
+        ds_id = ensure_dataset(s, db_id)
+        build_dashboard(s, ds_id)
+        url = dashboard_public_url()
+        register_in_entropy_data(url)
+        print(f"Done. Dashboard: {url}")
+
+
+    if __name__ == "__main__":
+        main()
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: superset-dashboard
+  namespace: platform
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: superset-dashboard
+  namespace: platform
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    resourceNames: ["oidc-endpoints"]
+    verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["services"]
+    resourceNames: ["simple-superset-node"]
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: superset-dashboard
+  namespace: platform
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: superset-dashboard
+subjects:
+  - kind: ServiceAccount
+    name: superset-dashboard
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: superset-nation-scorecard-dashboard-v1
+  namespace: platform
+spec:
+  backoffLimit: 60
+  template:
+    spec:
+      serviceAccountName: superset-dashboard
+      containers:
+        - name: build-dashboard
+          image: python:3.12-slim # renovate: datasource=docker depName=python
+          command: ["python", "-u", "/scripts/build_dashboard.py"]
+          env:
+            - name: SUPERSET_URL
+              value: "http://simple-superset-node.platform.svc.cluster.local:8088"
+            - name: SUPERSET_SERVICE
+              value: simple-superset-node
+            - name: SUPERSET_USER
+              valueFrom:
+                secretKeyRef:
+                  name: simple-superset-credentials
+                  key: adminUser.username
+            - name: SUPERSET_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: simple-superset-credentials
+                  key: adminUser.password
+            - name: TRINO_HOST
+              value: trino-coordinator.platform.svc.cluster.local
+            - name: TRINO_USER
+              value: admin
+            - name: TRINO_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: trino-users
+                  key: admin
+            - name: ED_INTERNAL_URL
+              value: "http://entropy-data:8080"
+            - name: ED_PUBLIC_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: oidc-endpoints
+                  key: entropy-data-base-url
+            - name: ENTROPY_DATA_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: entropy-data-api-key
+                  key: api-key
+                  optional: true
+          volumeMounts:
+            - name: scripts
+              mountPath: /scripts
+      volumes:
+        - name: scripts
+          configMap:
+            name: superset-dashboard-script
+      restartPolicy: OnFailure

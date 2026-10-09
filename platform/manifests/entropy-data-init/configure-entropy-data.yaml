@@ -277,6 +277,16 @@ data:
         print(f"  SSO auto join enabled for '{ORG_VANITY}'.")
 
 
+    def hide_marketplace_intro(browser):
+        """Close the "Let's get started" introduction on the marketplace start page."""
+        _, _, page = browser.get(f"{ED_PUBLIC}/{ORG_VANITY}/marketplace")
+        if "/marketplace/hide-intro" not in page:
+            print("  Marketplace introduction already hidden.")
+            return
+        browser.post(f"{ED_PUBLIC}/{ORG_VANITY}/marketplace/hide-intro", {"_csrf": csrf(page)})
+        print("  Marketplace introduction hidden.")
+
+
     def create_api_key(browser, scope="organization", display_name=None):
         print(f"Creating {scope} API key ...")
         _, _, page = browser.get(f"{ED_PUBLIC}/{ORG_VANITY}/settings/api-keys/add")
@@ -558,6 +568,7 @@ data:
         builder_session = Browser()
         sso_login(builder_session)
         register_builder(builder_session)
+        hide_marketplace_intro(builder_session)
         if DATACONTRACT_CLI_URL:
             print("Connecting the Data Contract CLI API ...")
             configure_datacontract_tests(builder_session)
@@ -607,7 +618,7 @@ subjects:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: configure-entropy-data-v5
+  name: configure-entropy-data-v6
   namespace: platform
 spec:
   backoffLimit: 50

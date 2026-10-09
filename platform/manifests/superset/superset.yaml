@@ -24,6 +24,17 @@ spec:
     config:
       logging:
         enableVectorAgent: true
+    podOverrides:
+      spec:
+        containers:
+          - name: superset
+            volumeMounts:
+              - name: trino-ca
+                mountPath: /stackable/trino-ca
+        volumes:
+          - name: trino-ca
+            configMap:
+              name: superset-tls-truststore
     roleGroups:
       default:
         config:

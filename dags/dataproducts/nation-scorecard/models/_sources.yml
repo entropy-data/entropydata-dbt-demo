@@ -1,0 +1,42 @@
+version: 2
+sources:
+- name: tpch_revenue_by_region
+  database: hive-iceberg
+  schema: demo
+  description: Revenue by Region data product (input port tpch-revenue-by-region).
+  meta:
+    data_contract:
+      id: tpch-revenue-by-region
+  tables:
+  - name: revenue_by_region
+    description: Revenue and order metrics aggregated by region and nation.
+- name: tpch_customer_lifetime_value
+  database: hive-iceberg
+  schema: demo
+  description: Customer Lifetime Value data product (input port tpch-customer-lifetime-value).
+  meta:
+    data_contract:
+      id: tpch-customer-lifetime-value
+  tables:
+  - name: customer_lifetime_value
+    description: Customer-level lifetime value metrics. One row per customer, including customers with zero orders.
+- name: tpch_shipping_analysis
+  database: hive-iceberg
+  schema: demo
+  description: Shipping Analysis data product (input port tpch-shipping-analysis).
+  meta:
+    data_contract:
+      id: tpch-shipping-analysis
+  tables:
+  - name: shipping_analysis
+    description: Shipping and delivery performance metrics aggregated by ship mode, region, and nation.
+- name: tpch_supplier_performance
+  database: hive-iceberg
+  schema: demo
+  description: Supplier Performance data product (input port tpch-supplier-performance).
+  meta:
+    data_contract:
+      id: tpch-supplier-performance
+  tables:
+  - name: supplier_performance
+    description: Supplier-level performance metrics. One row per supplier.

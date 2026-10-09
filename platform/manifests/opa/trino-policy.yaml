@@ -42,6 +42,11 @@ data:
       table.tableName in marts
     }
 
+    output_port(table) := {"dataProduct": "nation-scorecard", "outputPort": "nation-scorecard"} if {
+      table.catalogName == "hive-iceberg"
+      table.schemaName == "nation_scorecard"
+    }
+
     user := input.context.identity.user
 
     default allow := false

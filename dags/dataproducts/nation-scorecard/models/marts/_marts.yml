@@ -1,0 +1,29 @@
+version: 2
+models:
+- name: nation_scorecard
+  description: One row per nation.
+  meta:
+    data_contract:
+      id: nation-scorecard
+      file: nation-scorecard.odcs.yaml
+  columns:
+  - name: nation
+    description: Nation name.
+  - name: region
+    description: Region name.
+  - name: net_revenue
+    description: Net revenue of orders from customers in the nation.
+  - name: order_count
+    description: Number of orders from customers in the nation.
+  - name: customer_count
+    description: Number of customers in the nation who ordered.
+  - name: avg_customer_lifetime_value
+    description: Average lifetime net revenue per customer in the nation.
+  - name: late_delivery_rate
+    description: Share of shipments to the nation received after the commit date.
+  - name: return_rate
+    description: Share of shipped items to the nation that were returned.
+  - name: local_suppliers
+    description: Number of suppliers located in the nation.
+  - name: local_supplier_revenue
+    description: Net revenue of suppliers located in the nation.

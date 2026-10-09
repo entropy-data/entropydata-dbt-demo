@@ -1,0 +1,45 @@
+apiVersion: v1.0.0
+kind: DataProduct
+id: nation-scorecard
+name: Nation Scorecard
+version: 1.0.0
+status: active
+domain: sales
+description:
+  purpose: 'How each nation is doing as a market: revenue, customer value, delivery quality and local supply, in one row per nation. Built on the published mart data products.'
+team:
+  name: analytics-engineering
+inputPorts:
+- name: tpch-revenue-by-region
+  version: 1.0.0
+  contractId: tpch-revenue-by-region
+- name: tpch-customer-lifetime-value
+  version: 1.0.0
+  contractId: tpch-customer-lifetime-value
+- name: tpch-shipping-analysis
+  version: 1.0.0
+  contractId: tpch-shipping-analysis
+- name: tpch-supplier-performance
+  version: 1.0.0
+  contractId: tpch-supplier-performance
+outputPorts:
+- name: nation-scorecard
+  description: Table "hive-iceberg".nation_scorecard.nation_scorecard, built by dbt.
+  version: '1'
+  type: trino
+  contractId: nation-scorecard
+  customProperties:
+  - property: displayName
+    value: Nation Scorecard
+  - property: contractServer
+    value: trino
+tags:
+- consumer-aligned
+- dbt
+customProperties:
+- property: type
+  value: consumer-aligned
+- property: visibility
+  value: public
+- property: dataProductBuilder
+  value: https://github.com/entropy-data/entropydata-dbt-demo-builder
