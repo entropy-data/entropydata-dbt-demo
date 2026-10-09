@@ -8,9 +8,7 @@ A GitOps-managed Kubernetes demo that showcases [Entropy Data](https://www.entro
 
 The demo deploys a complete data lakehouse on Kubernetes, with TPC-H sample data flowing through dbt models in Trino, Iceberg tables managed by Lakekeeper, and S3-compatible storage via GarageFS. Data products are defined as code (ODPS + ODCS + dbt) and published to Entropy Data by Airflow, with lineage from `dbt-ol` and data contract test results, all continuously deployed via ArgoCD.
 
-![Data Mesh Architecture with Stackable and Entropy Data](docs/architecture/architecture.png)
-
-An open platform built from open source and open standards: the [Stackable Data Platform](https://stackable.tech/) runs the data infrastructure (Trino, Airflow, Kafka, NiFi, Superset, HDFS, ...) on Kubernetes, [Entropy Data](https://www.entropy-data.com/) is the data product marketplace on top. Everything is self-hosted and under your control, with no vendor lock-in; data products, contracts, lineage and semantics use open standards (ODPS, ODCS, OpenLineage, Apache Ossie). The diagram source is [docs/architecture/architecture.drawio](docs/architecture/architecture.drawio).
+An open platform built from open source and open standards: the [Stackable Data Platform](https://stackable.tech/) runs the data infrastructure (Trino, Airflow, Kafka, NiFi, Superset, HDFS, ...) on Kubernetes, [Entropy Data](https://www.entropy-data.com/) is the data product marketplace on top. Everything is self-hosted and under your control, with no vendor lock-in; data products, contracts, lineage and semantics use open standards (ODPS, ODCS, OpenLineage, Apache Ossie).
 
 > This is an adaptation of [stackabletech/openmetadata-dbt-demo](https://github.com/stackabletech/openmetadata-dbt-demo), with OpenMetadata replaced by Entropy Data.
 

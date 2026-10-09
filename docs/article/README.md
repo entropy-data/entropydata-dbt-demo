@@ -34,9 +34,7 @@ Offene Standards sind dabei mehr als ein Prinzip. Sie geben dem Agent einen klar
 
 Die Rolle des Menschen verschiebt sich: weg vom Programmieren, hin zur Frage, was gebaut werden soll und welchen Wert es stiftet. Die Plattform sorgt dafür, dass jedes neue Daten-Produkt auf offenen Standards steht und sich nahtlos in die bestehende Datenlandschaft einfügt.
 
-![Architektur im Stil von datamesh-architecture.com](../architecture/architecture.png)
-
-Wer tiefer einsteigen will: Die gesamte Demo ist offen auf GitHub verfügbar, inklusive Architektur, Daten-Produkten und Skills.
+Wer tiefer einsteigen will: Die gesamte Demo ist offen auf GitHub verfügbar, inklusive Plattform-Konfiguration, Daten-Produkten und Skills.
 https://github.com/entropy-data/entropydata-dbt-demo
 
 ## Sprechen wir darüber
