@@ -10,7 +10,7 @@ The demo deploys a complete data lakehouse on Kubernetes, with TPC-H sample data
 
 ![Data Mesh Architecture with Stackable and Entropy Data](docs/architecture/architecture.png)
 
-An open platform built from open source and open standards: the [Stackable Data Platform](https://stackable.tech/) runs the data infrastructure (Trino, Airflow, Kafka, NiFi, Superset, HDFS, ...) on Kubernetes, [Entropy Data](https://www.entropy-data.com/) is the data product marketplace on top. Everything is self-hosted and under your control, with no vendor lock-in; data products, contracts, lineage and semantics use open standards (ODPS, ODCS, OpenLineage, OSI). The diagram source is [docs/architecture/architecture.drawio](docs/architecture/architecture.drawio).
+An open platform built from open source and open standards: the [Stackable Data Platform](https://stackable.tech/) runs the data infrastructure (Trino, Airflow, Kafka, NiFi, Superset, HDFS, ...) on Kubernetes, [Entropy Data](https://www.entropy-data.com/) is the data product marketplace on top. Everything is self-hosted and under your control, with no vendor lock-in; data products, contracts, lineage and semantics use open standards (ODPS, ODCS, OpenLineage, Apache Ossie). The diagram source is [docs/architecture/architecture.drawio](docs/architecture/architecture.drawio).
 
 > This is an adaptation of [stackabletech/openmetadata-dbt-demo](https://github.com/stackabletech/openmetadata-dbt-demo), with OpenMetadata replaced by Entropy Data.
 
