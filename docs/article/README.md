@@ -6,7 +6,7 @@ Viele Unternehmen wollen eine moderne Datenplattform, ohne sich an einen Anbiete
 
 ## Die Plattform: Stackable
 
-Die Stackable Data Platform bildet das Fundament. Sie betreibt bewährte Open-Source-Komponenten wie Trino, Airflow, Kafka, NiFi und Superset auf Kubernetes, egal ob im eigenen Rechenzentrum oder in der Cloud. Die Komponenten sind aufeinander abgestimmt, sicher konfiguriert und werden per GitOps ausgerollt. Für Sicherheit und Support sorgt Stackable, ohne dass ein Vendor Lock-in entsteht.
+Die Stackable Data Platform bildet das Fundament. Sie betreibt bewährte Open-Source-Komponenten wie Trino, Airflow, Superset und OPA auf Kubernetes, egal ob im eigenen Rechenzentrum oder in der Cloud. Die Komponenten sind aufeinander abgestimmt, sicher konfiguriert und werden per GitOps ausgerollt. Für Sicherheit und Support sorgt Stackable, ohne dass ein Vendor Lock-in entsteht.
 
 ## Der Marktplatz: Entropy Data
 

@@ -4,11 +4,11 @@
 > This repository is not meant for the general public, it is public because it may be helpful to some people and definitely serves an instructional purpose, but especially the justfile recipes and scripts in here can cause harm and delete data if not used with caution! 
 
 
-A GitOps-managed Kubernetes demo that showcases [Entropy Data](https://www.entropy-data.com/) (Community Edition) on the [Stackable Data Platform](https://stackable.tech/), alongside commonly used tools from the wider data ecosystem: Superset, dbt, OpenLineage, Lakekeeper, GarageFS, Kafka, and NiFi.
+A GitOps-managed Kubernetes demo that showcases [Entropy Data](https://www.entropy-data.com/) (Community Edition) on the [Stackable Data Platform](https://stackable.tech/), alongside commonly used tools from the wider data ecosystem: Superset, dbt and OpenLineage.
 
-The demo deploys a complete data lakehouse on Kubernetes, with TPC-H sample data flowing through dbt models in Trino, Iceberg tables managed by Lakekeeper, and S3-compatible storage via GarageFS. Data products are defined as code (ODPS + ODCS + dbt) and published to Entropy Data by Airflow, with lineage from `dbt-ol` and data contract test results, all continuously deployed via ArgoCD.
+The demo deploys a complete data lakehouse on Kubernetes, with TPC-H sample data flowing through dbt models in Trino into Iceberg tables. Data products are defined as code (ODPS + ODCS + dbt) and published to Entropy Data by Airflow, with lineage from `dbt-ol` and data contract test results, all continuously deployed via ArgoCD.
 
-An open platform built from open source and open standards: the [Stackable Data Platform](https://stackable.tech/) runs the data infrastructure (Trino, Airflow, Kafka, NiFi, Superset, HDFS, ...) on Kubernetes, [Entropy Data](https://www.entropy-data.com/) is the data product marketplace on top. Everything is self-hosted and under your control, with no vendor lock-in; data products, contracts, lineage and semantics use open standards (ODPS, ODCS, OpenLineage, Apache Ossie).
+An open platform built from open source and open standards: the [Stackable Data Platform](https://stackable.tech/) runs the data infrastructure (Trino, Airflow, Superset, HDFS, Hive, OPA, Keycloak, ...) on Kubernetes, [Entropy Data](https://www.entropy-data.com/) is the data product marketplace on top. Everything is self-hosted and under your control, with no vendor lock-in; data products, contracts, lineage and semantics use open standards (ODPS, ODCS, OpenLineage, Apache Ossie).
 
 > This is an adaptation of [stackabletech/openmetadata-dbt-demo](https://github.com/stackabletech/openmetadata-dbt-demo), with OpenMetadata replaced by Entropy Data.
 
