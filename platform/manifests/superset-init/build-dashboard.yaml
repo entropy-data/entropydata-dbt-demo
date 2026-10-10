@@ -88,14 +88,18 @@ data:
 
 
     def ensure_database(s):
+        # impersonate_user: queries run in Trino as the Superset user, so OPA checks that user's access
+        # in Entropy Data. The technical user only authenticates (and may impersonate, see the policy).
         db_id = s.find("database", "database_name", "Trino")
         if db_id:
+            s.call("PUT", f"/api/v1/database/{db_id}", {"impersonate_user": True})
             return db_id
         print("Creating the Trino database connection ...")
         return s.call("POST", "/api/v1/database/", {
             "database_name": "Trino",
             "sqlalchemy_uri": TRINO_URI,
             "expose_in_sqllab": True,
+            "impersonate_user": True,
             "extra": json.dumps({"engine_params": {"connect_args": {"http_scheme": "https", "verify": TRINO_CA}}}),
         })["id"]
 
@@ -291,7 +295,7 @@ data:
                 "usage": f"Open the dashboard in Superset: {url}",
                 "authoritativeDefinitions": [{"type": "dashboard", "url": url}],
             },
-            "team": {"name": "analytics-engineering"},
+            "team": {"name": "market-analytics"},
             "inputPorts": [{"name": "nation-scorecard", "version": "1.0.0", "contractId": "nation-scorecard"}],
             "tags": ["superset", "dashboard"],
             "customProperties": [
@@ -309,7 +313,7 @@ data:
             },
             "provider": {"teamId": "analytics-engineering", "dataProductId": "nation-scorecard",
                          "outputPortId": "nation-scorecard"},
-            "consumer": {"teamId": "analytics-engineering", "dataProductId": CONSUMER_ID},
+            "consumer": {"teamId": "market-analytics", "dataProductId": CONSUMER_ID},
         })
 
 

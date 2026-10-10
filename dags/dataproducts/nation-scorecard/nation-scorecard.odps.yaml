@@ -31,6 +31,8 @@ outputPorts:
   customProperties:
   - property: displayName
     value: Nation Scorecard
+  - property: autoApprove
+    value: true
   - property: contractServer
     value: trino
 tags:

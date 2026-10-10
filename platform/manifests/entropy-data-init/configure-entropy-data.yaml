@@ -313,12 +313,24 @@ data:
         "name": "Analytics Engineering",
         "type": "Team",
         "description": "Owns the demo data products in dags/dataproducts/.",
+        "members": [{"emailAddress": "demo-admin@stackable.demo", "role": "Owner"}],
+    }
+
+    # The data consumer side of the demo: demo-user requests access for this team, and Trino (OPA)
+    # lets team members read the data once the access is active.
+    CONSUMER_TEAM = {
+        "id": "market-analytics",
+        "name": "Market Analytics",
+        "type": "Team",
+        "description": "Analysts who build market dashboards on the data products.",
+        "members": [{"emailAddress": "demo-user@stackable.demo", "role": "Owner"}],
     }
 
     def provision(api_key):
         # Data products and contracts are published by the Airflow DAGs from dags/dataproducts/
-        print(f"Creating team '{TEAM['id']}' ...")
-        api(f"/teams/{TEAM['id']}", method="PUT", data=TEAM, api_key=api_key)
+        for team in (TEAM, CONSUMER_TEAM):
+            print(f"Creating team '{team['id']}' ...")
+            api(f"/teams/{team['id']}", method="PUT", data=team, api_key=api_key)
 
 
     TRINO_INTEGRATION = {

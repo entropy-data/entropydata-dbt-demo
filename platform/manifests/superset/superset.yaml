@@ -42,5 +42,5 @@ spec:
           webserverTimeout: 300
         configOverrides:
           superset_config.py:
-            AUTH_ROLES_MAPPING: '{"admin": ["Admin"], "viewer": ["Gamma"]}'
+            AUTH_ROLES_MAPPING: '{"admin": ["Admin"], "viewer": ["Alpha", "sql_lab"]}'
             AUTH_ROLES_SYNC_AT_LOGIN: "true"
