@@ -31,6 +31,10 @@ outputPorts:
   customProperties:
   - property: displayName
     value: Nation Scorecard
+  - property: openInLinks
+    value:
+    - name: Superset (SQL Lab)
+      url: ${SUPERSET_URL}/sqllab/?dbid=1&name=Nation%20Scorecard&sql=SELECT%20%2A%20FROM%20%22hive-iceberg%22.nation_scorecard.nation_scorecard%20LIMIT%20100
   - property: autoApprove
     value: true
   - property: contractServer

@@ -170,6 +170,8 @@ Data products live as code in `dags/dataproducts/<data-product-id>/`: an ODPS fi
 
 The job in `platform/manifests/superset-init/` builds the Superset dashboard "Nation Scorecard" on the `nation-scorecard` table (Trino connection, dataset, charts) and registers it in Entropy Data as a data consumer (type `dataconsumer`) with an input port and an approved access agreement, so the lineage shows the dashboard downstream of the data products it uses. It retries until the table exists.
 
+Each Trino output port has an Open In link "Superset (SQL Lab)" (ODPS custom property `openInLinks`), which opens SQL Lab with a query on the port's table. The ODPS files use the placeholder `${SUPERSET_URL}`, which the DAG replaces with the Superset URL of the cluster (fixed NodePort 30888, ConfigMap `oidc-endpoints`, key `superset-base-url`) when publishing.
+
 Access to data product tables in Trino is governed by Entropy Data (OPA, see `platform/manifests/opa/`). Superset queries Trino as the logged-in user (impersonation), so `demo-user` (team Market Analytics) gets "Access Denied" on `nation_scorecard` until they request access for their team in Entropy Data. The Nation Scorecard output port is set to auto-approve, so the access is active right away and the same query then succeeds.
 
 To add a data product, add a folder and push it to the in-cluster Forgejo. The [entropydata-dbt-demo-builder](https://github.com/entropy-data/entropydata-dbt-demo-builder) coding-agent plugin scaffolds and implements such folders.

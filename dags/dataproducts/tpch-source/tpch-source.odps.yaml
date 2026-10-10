@@ -19,6 +19,10 @@ outputPorts:
   customProperties:
   - property: displayName
     value: Source Data
+  - property: openInLinks
+    value:
+    - name: Superset (SQL Lab)
+      url: ${SUPERSET_URL}/sqllab/?dbid=1&name=Source%20Data&sql=SELECT%20%2A%20FROM%20tpch.tiny.orders%20LIMIT%20100
 tags:
 - tpch
 - source-aligned

@@ -385,6 +385,12 @@ spec:
               value: "http://simple-superset-node.platform.svc.cluster.local:8088"
             - name: SUPERSET_SERVICE
               value: simple-superset-node
+            - name: SUPERSET_PUBLIC_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: oidc-endpoints
+                  key: superset-base-url
+                  optional: true
             - name: SUPERSET_USER
               valueFrom:
                 secretKeyRef:

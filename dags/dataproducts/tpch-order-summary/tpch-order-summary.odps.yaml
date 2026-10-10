@@ -26,6 +26,10 @@ outputPorts:
   customProperties:
   - property: displayName
     value: Order Summary
+  - property: openInLinks
+    value:
+    - name: Superset (SQL Lab)
+      url: ${SUPERSET_URL}/sqllab/?dbid=1&name=Order%20Summary&sql=SELECT%20%2A%20FROM%20%22hive-iceberg%22.demo.order_summary%20LIMIT%20100
 tags:
 - tpch
 - consumer-aligned

@@ -13,7 +13,8 @@
 # assets). Data products without such inputs run daily.
 #
 # Credentials come from the executor environment (see platform/manifests/airflow/airflow.yaml):
-# ENTROPY_DATA_API_KEY, TRINO_PASSWORD and TRINO_CA_BUNDLE.
+# ENTROPY_DATA_API_KEY, TRINO_PASSWORD and TRINO_CA_BUNDLE. SUPERSET_URL replaces the ${SUPERSET_URL}
+# placeholder of the Open In links in the ODPS files.
 from datetime import datetime
 from pathlib import Path
 
@@ -94,7 +95,9 @@ def publish(folder: str, semantics_folder: str, entropy_data_url: str):
     for contract in sorted(folder.glob("*.odcs.yaml")):
         put("datacontracts", yaml.safe_load(contract.read_text()))
     for product in sorted(folder.glob("*.odps.yaml")):
-        put("dataproducts", yaml.safe_load(product.read_text()))
+        # Open In links point to Superset, whose URL depends on the cluster (see SUPERSET_URL)
+        text = product.read_text().replace("${SUPERSET_URL}", os.environ.get("SUPERSET_URL", "").rstrip("/"))
+        put("dataproducts", yaml.safe_load(text))
 
 
 def dbt_build(folder: str, entropy_data_url: str, data_product_id: str):

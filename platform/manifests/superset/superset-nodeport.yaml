@@ -1,0 +1,20 @@
+---
+# Fixed NodePort for Superset, so links from Entropy Data (Open In, data consumer) have a stable URL:
+# http://<node-ip>:30888 (ConfigMap oidc-endpoints, key superset-base-url)
+apiVersion: v1
+kind: Service
+metadata:
+  name: superset-nodeport
+  namespace: platform
+spec:
+  type: NodePort
+  selector:
+    app.kubernetes.io/name: superset
+    app.kubernetes.io/instance: simple-superset
+    app.kubernetes.io/component: node
+  ports:
+    - name: http
+      port: 8088
+      targetPort: 8088
+      nodePort: 30888
+      protocol: TCP

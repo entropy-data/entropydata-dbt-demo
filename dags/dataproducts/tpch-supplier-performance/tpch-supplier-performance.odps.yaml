@@ -24,6 +24,10 @@ outputPorts:
   customProperties:
   - property: displayName
     value: Supplier Performance
+  - property: openInLinks
+    value:
+    - name: Superset (SQL Lab)
+      url: ${SUPERSET_URL}/sqllab/?dbid=1&name=Supplier%20Performance&sql=SELECT%20%2A%20FROM%20%22hive-iceberg%22.demo.supplier_performance%20LIMIT%20100
 tags:
 - tpch
 - consumer-aligned

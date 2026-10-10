@@ -24,6 +24,10 @@ outputPorts:
   customProperties:
   - property: displayName
     value: Part Pricing Analysis
+  - property: openInLinks
+    value:
+    - name: Superset (SQL Lab)
+      url: ${SUPERSET_URL}/sqllab/?dbid=1&name=Part%20Pricing%20Analysis&sql=SELECT%20%2A%20FROM%20%22hive-iceberg%22.demo.part_pricing_analysis%20LIMIT%20100
 tags:
 - tpch
 - consumer-aligned

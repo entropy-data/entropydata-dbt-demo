@@ -92,6 +92,12 @@ spec:
                     name: entropy-data-api-key # created at runtime by the entropy-data-init job
                     key: api-key
                     optional: true
+              - name: SUPERSET_URL
+                valueFrom:
+                  configMapKeyRef:
+                    name: oidc-endpoints
+                    key: superset-base-url
+                    optional: true
               - name: TRINO_USER
                 value: admin
               - name: TRINO_PASSWORD
