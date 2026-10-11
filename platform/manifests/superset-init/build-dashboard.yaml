@@ -201,6 +201,17 @@ data:
         dashboard_id = s.call("POST", "/api/v1/dashboard/", {
             "dashboard_title": "Nation Scorecard", "slug": SLUG, "published": True,
         })["id"]
+        # Analysts may add their own charts to the dashboard, which Superset only allows to owners.
+        # Superset users from Keycloak exist after their first login; rerun the job to add them later.
+        def user_id(username):
+            q = urllib.request.quote(f"(filter:'{username}')")
+            result = s.call("GET", f"/api/v1/dashboard/related/owners?q={q}")["result"]
+            return result[0]["value"] if result else None
+
+        owners = [i for i in map(user_id, os.environ.get("DASHBOARD_OWNERS", "").split()) if i]
+        if owners:
+            s.call("PUT", f"/api/v1/dashboard/{dashboard_id}", {"owners": [user_id(os.environ["SUPERSET_USER"]), *owners]})
+            print(f"  Owners: {os.environ['SUPERSET_USER']} and {os.environ['DASHBOARD_OWNERS']}")
 
         layout = {
             "DASHBOARD_VERSION_KEY": "v2",
@@ -391,6 +402,8 @@ spec:
                   name: oidc-endpoints
                   key: superset-base-url
                   optional: true
+            - name: DASHBOARD_OWNERS
+              value: demo-user
             - name: SUPERSET_USER
               valueFrom:
                 secretKeyRef:
